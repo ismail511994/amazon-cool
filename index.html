@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>أمازون كول | HVAC Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+:root{--bg:#090d16;--card:#151d2a;--blue:#0284c7;--green:#10b981;--red:#ef4444;--txt:#f8fafc;--muted:#94a3b8;--border:#26334d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:Tajawal,Arial,sans-serif}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.app{max-width:1180px;margin:auto;padding:14px}
+.top{position:sticky;top:0;z-index:5;background:#090d16ee;backdrop-filter:blur(12px);padding:10px 0}
+.brand{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.brand h1{margin:0;font-size:22px}
+.badge{padding:5px 9px;border-radius:999px;background:#10263a;color:#67e8f9;font-size:12px}
+.nav{display:flex;gap:7px;overflow:auto;padding:10px 0}
+.nav button,.btn{border:1px solid var(--border);background:var(--card);color:var(--txt);padding:10px 13px;border-radius:10px}
+.nav button.active,.btn.primary{background:var(--blue);border-color:var(--blue)}
+.btn.green{background:#075e4a;border-color:#0b8065}
+.btn.red{background:#641d25;border-color:#8e2733}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:15px;padding:15px;margin:12px 0}
+.muted{color:var(--muted)}
+.price{font-size:20px;font-weight:800;color:#67e8f9}
+.field{margin:9px 0}
+.field label{display:block;color:#cbd5e1;margin-bottom:5px;font-size:13px}
+.field input,.field select,.field textarea{width:100%;background:#0b1220;color:var(--txt);border:1px solid var(--border);border-radius:10px;padding:11px;outline:none}
+.field textarea{min-height:90px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.hidden{display:none!important}
+.notice{padding:11px;border-radius:10px;background:#171f2c;border:1px solid var(--border);margin:10px 0}
+.ok{border-color:#065f46;background:#062e26}
+.err{border-color:#7f1d1d;background:#351216}
+.table{width:100%;border-collapse:collapse}
+.table th,.table td{border-bottom:1px solid var(--border);padding:9px;text-align:right;vertical-align:top}
+.search{display:flex;gap:8px}
+.search input{flex:1}
+.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#243147;font-size:12px}
+.modal{position:fixed;inset:0;background:#0009;display:none;align-items:center;justify-content:center;z-index:20;padding:15px}
+.modal.open{display:flex}
+.modalbox{width:min(520px,100%);background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;max-height:90vh;overflow:auto}
+.footer{color:var(--muted);text-align:center;padding:30px;font-size:13px}
+@media(max-width:600px){.app{padding:9px}.grid{grid-template-columns:1fr}.table{font-size:12px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top">
+  <div class="brand">
+    <div><h1>أمازون كول</h1><div class="muted">HVAC Pro & Store</div></div>
+    <span id="modeBadge" class="badge">وضع تجريبي</span>
+  </div>
+  <nav class="nav" id="nav"></nav>
+</header>
+<main id="app"></main>
+<footer class="footer">أمازون كول — صيانة وتركيب وتشخيص وتجارة أجهزة التكييف</footer>
+</div>
+
+<div class="modal" id="authModal">
+  <div class="modalbox">
+    <div class="actions" style="justify-content:space-between">
+      <h2 id="authTitle">تسجيل الدخول</h2>
+      <button class="btn" onclick="closeAuth()">إغلاق</button>
+    </div>
+    <div id="authMsg"></div>
+    <form onsubmit="submitAuth(event)">
+      <div id="nameWrap" class="field hidden"><label>الاسم</label><input id="authName"></div>
+      <div id="phoneWrap" class="field hidden"><label>رقم الهاتف</label><input id="authPhone"></div>
+      <div class="field"><label>البريد الإلكتروني</label><input id="authEmail" type="email" required></div>
+      <div class="field"><label>كلمة المرور</label><input id="authPassword" type="password" minlength="6" required></div>
+      <button class="btn primary" style="width:100%" id="authSubmit">دخول</button>
+    </form>
+    <button class="btn" style="width:100%;margin-top:8px" onclick="toggleAuthMode()" id="authSwitch">إنشاء حساب جديد</button>
+    
+<div style="display:flex;align-items:center;gap:10px;margin:16px 0">
+  <div style="flex:1;height:1px;background:var(--border)"></div>
+  <span class="muted" style="font-size:12px">أو</span>
+  <div style="flex:1;height:1px;background:var(--border)"></div>
+</div>
+
+<button onclick="loginWithGoogle()" id="googleBtn" style="width:100%;padding:12px;margin-bottom:8px;background:#fff;color:#333;border:1px solid #ddd;border-radius:10px;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer">
+  <svg width="18" height="18" viewBox="0 0 48 48">
+    <path fill="#FFC107" d="M43.6 20.5H42V20.4H24v7.2h11.2c-1.6 4.6-6 7.9-11.2 7.9-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.1-5.1C34 6.8 29.3 5 24 5 13.5 5 5 13.5 5 24s8.5 19 19 19c10.5 0 19-8.5 19-19 0-1.3-.1-2.5-.4-3.5z"/>
+    <path fill="#FF3D00" d="M6.3 14.7l6 4.4C14 15.6 18.6 13 24 13c3.1 0 5.9 1.2 8 3.1l5.1-5.1C34 6.8 29.3 5 24 5c-7.6 0-14.1 4.3-17.7 9.7z"/>
+    <path fill="#4CAF50" d="M24 43c5.2 0 9.9-1.8 13.6-4.8l-6.1-5.2C29.5 34.6 26.9 35.5 24 35.5c-5.2 0-9.5-3.3-11.1-7.9l-6 4.6C10.5 38.5 16.8 43 24 43z"/>
+    <path fill="#1976D2" d="M43.6 20.5H42V20.4H24v7.2h11.2c-.7 2.2-2 4.1-3.7 5.5l6.1 5.2C41.2 34.9 43 30 43 24c0-1.3-.1-2.5-.4-3.5z"/>
+  </svg>
+  الدخول بحساب Google
+</button>
+
+<button onclick="loginWithFacebook()" id="facebookBtn" style="width:100%;padding:12px;background:#1877F2;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff">
+    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+  </svg>
+  الدخول بحساب Facebook
+</button>
+
+  </div>
+</div>
+
+<script>
+/* ========== CONFIG ========== */
+  const ADMIN_EMAILS=[
+  'admin@amazoncool.com',
+  'ismailsalahali482@gmail.com'
+];
+
+const CONFIG={
+  SUPABASE_URL:'YOUR_SUPABASE_PROJECT_URL',
+  SUPABASE_ANON_KEY:'YOUR_SUPABASE_ANON_KEY',
+  WHATSAPP_NUMBER:'201275998196',
+  DEMO_MODE:true,
+  GEMINI_API_KEY:'AQ.Ab8RN6ILlpvtgCL9aGfWJJ2CVovl5cwb03TjTA9O8DM3icGFMw',
+  CURRENCY:'ج.م'
+};
+const isConfigured=CONFIG.SUPABASE_URL.startsWith('https://')&&!CONFIG.SUPABASE_URL.includes('YOUR_');
+const DEMO=CONFIG.DEMO_MODE||!isConfigured;
+const db=(!DEMO&&window.supabase)?window.supabase.createClient(CONFIG.SUPABASE_URL,CONFIG.SUPABASE_ANON_KEY):null;
+
+/* ========== SAFE STORAGE ========== */
+function safeRead(key,fallback){
+  try{
+    const s=localStorage.getItem(key);
+    if(!s||s==='null'||s==='undefined')return fallback;
+    const parsed=JSON.parse(s);
+    return parsed===null||parsed===undefined?fallback:parsed;
+  }catch(e){
+    console.warn('Safe read failed for:',key,e);
+    return fallback;
+  }
+}
+function safeWrite(key,val){
+  try{localStorage.setItem(key,JSON.stringify(val))}
+  catch(e){console.warn('Safe write failed:',key,e)}
+}
+
+/* ========== DEFAULT DATA ========== */
+const DEFAULT_PRODUCTS=[
+  {id:'p1',name:'Carrier Optimax Inverter 1.5 HP',price:28500,brand:'Carrier',stock:5,discount:0,emoji:'❄️',description:'جهاز تكييف إنفرتر موفر للطاقة'},
+  {id:'p2',name:'Sharp Inverter Plasma 2.25 HP',price:37200,brand:'Sharp',stock:4,discount:0,emoji:'💨',description:'تكييف إنفرتر بتقنية Plasma'},
+  {id:'p3',name:'LG Dual Inverter 1.5 HP',price:31000,brand:'LG',stock:4,discount:0,emoji:'❄️',description:'تكييف LG Dual Inverter'},
+  {id:'p4',name:'Gree Polar Split 3 HP',price:42000,brand:'Gree',stock:3,discount:0,emoji:'🌬️',description:'تكييف سبليت 3 حصان'},
+  {id:'p5',name:'Fresh Turbo Black 1.5 HP',price:21500,brand:'Fresh',stock:6,discount:0,emoji:'🖤',description:'تكييف Fresh Turbo'},
+  {id:'p6',name:'Carrier Concealed 3 HP',price:54000,brand:'Carrier',stock:2,discount:0,emoji:'🏢',description:'تكييف كونسيلد للسقف'}
+];
+
+const DEFAULT_ADS=[
+  {id:'ad1',title:'عرض خاص على Carrier Optimax',body:'خصم يصل لـ 15% لفترة محدودة على أجهزة Carrier Inverter.',productId:'p1',emoji:'🔥',color:'#ef4444',active:true},
+  {id:'ad2',title:'جديدنا: Sharp Plasma Cluster',body:'أحدث موديلات Sharp بتقنية Plasma لتنقية الهواء.',productId:'p2',emoji:'✨',color:'#10b981',active:true}
+];
+
+const DEFAULT_PIPE_PRICES={
+  perMeter:{1.5:150,2.25:180,3:200,4:250,5:300},
+  typeMultiplier:{standard:1,hidden:1.4,decor:1.7},
+  accessories:350,
+  installPerUnit:400,
+  discount2Units:5,
+  discount3PlusUnits:10
+};
+
+const faultDB=[
+  ['Carrier','E1','حساس حرارة الغرفة','افحص حساس الوحدة الداخلية والفيشة والمقاومة والأسلاك.'],
+  ['Carrier','E2','حساس المبخر','افحص حساس المبخر والتوصيلات وقيمة المقاومة.'],
+  ['Carrier','E3','حساس المكثف/الضاغط','راجع كود الموديل ودائرة الحساس والكونكتور.'],
+  ['Carrier','E4','حماية/عطل حرارة أو ضغط','افحص الضغوط، المراوح، نظافة المكثف ودائرة الحماية.'],
+  ['Midea','E1','اتصال بين الوحدتين','افحص كابل الاتصال والتغذية والأرضي واللوحات.'],
+  ['Midea','E5','حماية تيار/جهد','قِس الجهد والتيار وافحص الضاغط ودائرة القدرة.'],
+  ['Midea','E6','عطل مروحة الداخلية','افحص موتور المروحة، الأسلاك واللوحة.'],
+  ['Sharp','E1','حساس حرارة','افحص الحساس والمقاومة والتوصيلات.'],
+  ['Sharp','E6','حماية/اتصال حسب السلسلة','حدد الموديل الكامل قبل استبدال أي جزء.'],
+  ['Sharp','H1','إزالة ثلج/Defrost','افحص الحساس، الصمام، المروحة وتدفق الهواء.'],
+  ['LG','CH01','حساس هواء داخلي','افحص حساس الغرفة والكونكتور.'],
+  ['LG','CH02','حساس مبخر','افحص حساس المبخر والتوصيلات.'],
+  ['LG','CH05','اتصال داخلي/خارجي','افحص كابل الاتصال والتغذية واللوحات.'],
+  ['LG','CH21','حماية تيار مستمر/ضاغط','افحص الضاغط وIPM والجهد والتيار.'],
+  ['Gree','E1','ضغط مرتفع','افحص نظافة المكثف، المروحة، الشحنة والعوائق.'],
+  ['Gree','E2','تجمد/ضغط منخفض','افحص تدفق الهواء، الفلاتر والشحنة.'],
+  ['Gree','E6','اتصال','افحص أسلاك الاتصال واللوحات.'],
+  ['Fresh','E1','حساس/اتصال حسب الموديل','حدد الموديل الكامل قبل التشخيص النهائي.'],
+  ['Unionaire','E1','حساس/اتصال حسب السلسلة','افحص الحساسات والتوصيلات واللوحة.'],
+  ['Unionaire','E6','اتصال أو مروحة','راجع دليل الموديل وافحص التغذية والـfeedback.']
+];
+
+/* ========== STATE ========== */
+const state={
+  user:null,
+  profile:null,
+  role:DEMO?'admin':'guest',
+  page:'home',
+  emergency:false,
+  authMode:'login',
+  cart:safeRead('ac_cart',[])
+};
+
+/* ========== DATA (SAFE) ========== */
+var products=safeRead('ac_products',null)||DEFAULT_PRODUCTS.map(function(p){return Object.assign({},p)});
+var ads=safeRead('ac_ads',null)||DEFAULT_ADS.map(function(a){return Object.assign({},a)});
+var pipePrices=safeRead('ac_pipe_prices',null)||JSON.parse(JSON.stringify(DEFAULT_PIPE_PRICES));
+
+function saveProducts(){safeWrite('ac_products',products)}
+function saveAds(){safeWrite('ac_ads',ads)}
+function savePipePrices(){safeWrite('ac_pipe_prices',pipePrices)}
+function saveCart(){safeWrite('ac_cart',state.cart)}
+
+/* ========== HELPERS ========== */
+function esc(v){return String(v==null?'':v).replace(/[&<>'"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]})}
+function money(n){return Number(n||0).toLocaleString('ar-EG')+' '+CONFIG.CURRENCY}
+function setPage(p){state.page=p;render()}
+function cartCount(){return state.cart.reduce(function(a,x){return a+x.qty},0)}
+
+function navItems(){
+  var a=[['home','الرئيسية'],['store','المتجر'],['ads','الإعلانات'],['diagnosis','تشخيص الأعطال'],['calculators','الحاسبات'],['services','الخدمات'],['orders','طلباتي']];
+  a.push(['cart','السلة ('+cartCount()+')']);
+  if(state.user && (state.role==='admin' || ADMIN_EMAILS.indexOf(state.user.email)>-1))a.push(['admin','الإدارة']);
+  return a;
+}
+
+function renderNav(){
+  document.getElementById('nav').innerHTML=navItems().map(function(x){
+    return '<button class="'+(state.page===x[0]?'active':'')+'" onclick="setPage(\''+x[0]+'\')">'+x[1]+'</button>';
+  }).join('')+(state.user?'<button onclick="logout()">خروج</button>':'<button onclick="openAuth()">دخول</button>');
+}
+
+function render(){
+  try{
+    renderNav();
+    document.getElementById('modeBadge').textContent=DEMO?'وضع تجريبي':'متصل بـ Supabase';
+    document.getElementById('app').innerHTML=pages[state.page]?pages[state.page]():pages.home();
+    postRender();
+  }catch(e){
+    console.error(e);
+    document.getElementById('app').innerHTML='<div class="notice err">خطأ: '+esc(e.message)+'</div>';
+  }
+}
+  
+/* ========== PAGES ========== */
+const pages={
+home:()=>`
+<section style="position:relative;margin:0 0 18px 0;padding:0;border-radius:22px;overflow:hidden;box-shadow:0 14px 50px rgba(2,132,199,.35)">
+  <div style="position:relative;height:230px;background:linear-gradient(180deg,rgba(0,0,0,.15) 0%,rgba(0,0,0,.85) 100%),url('https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&q=80') center/cover">
+    <div style="position:absolute;top:14px;right:14px;background:rgba(255,153,0,.95);color:#111;padding:6px 14px;border-radius:999px;font-size:11px;font-weight:900">🏆 الأفضل في مصر</div>
+    <div style="position:absolute;bottom:0;left:0;right:0;padding:20px 18px;text-align:right">
+      <div style="display:inline-block;background:linear-gradient(90deg,#f59e0b,#ef4444);color:#fff;padding:5px 12px;border-radius:8px;font-size:11px;font-weight:900;margin-bottom:10px">⚡ خدمة تركيب مواسير احترافية</div>
+      <h1 style="font-size:22px;font-weight:900;color:#fff;margin:0 0 8px 0;line-height:1.35;text-shadow:0 2px 8px rgba(0,0,0,.6)">
+        محتاج تأسّس شقتك أو شركتك تكييف؟<br>
+        <span style="color:#fbbf24;font-size:24px">أمازون كول هي اختيارك</span>
+      </h1>
+      <p style="color:#e0f2fe;font-size:13px;margin:0 0 14px 0;line-height:1.6">خايف من الأسعار النار؟ <b style="color:#fff">مع أمازون كول إنت اللي تحدد سعرك بنفسك</b></p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="setPage('services')" style="background:#f59e0b;color:#111;padding:11px 18px;border:none;border-radius:10px;font-weight:900;font-size:13px;cursor:pointer">🔧 اطلب تأسيس الآن</button>
+        <button onclick="setPage('calculators')" style="background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);color:#fff;padding:11px 18px;border-radius:10px;font-weight:900;font-size:13px;cursor:pointer">🧮 احسب سعرك</button>
+      </div>
+    </div>
+  </div>
+  <div style="background:linear-gradient(135deg,#0c4a6e,#155e75);padding:12px 18px;display:flex;justify-content:space-around;text-align:center;font-size:11px;color:#cffafe">
+    <div>⚡ <b style="color:#fff">سرعة تنفيذ</b></div>
+    <div>🎯 <b style="color:#fff">سعر واضح</b></div>
+    <div>🛡️ <b style="color:#fff">ضمان سنة</b></div>
+  </div>
+</section>
+
+<section style="position:relative;padding:30px 20px;border-radius:22px;background:linear-gradient(135deg,#0c4a6e 0%,#0e7490 50%,#155e75 100%);overflow:hidden;text-align:center;box-shadow:0 12px 40px rgba(6,182,212,.28);margin-bottom:20px">
+  <div style="font-size:48px">❄️</div>
+  <div style="display:inline-block;background:rgba(239,68,68,.25);border:1px solid rgba(239,68,68,.5);color:#fecaca;padding:4px 12px;border-radius:999px;font-size:11px;font-weight:800;margin-top:8px">🔴 خدمة طوارئ 24/7</div>
+  <h2 style="font-size:22px;font-weight:900;margin:12px 0 8px 0;color:#fff">تكييفك عطلان؟ <span style="color:#fbbf24">إحنا في خدمتك</span></h2>
+  <p style="color:#cffafe;font-size:13px;margin:0 0 14px 0">فني خلال ساعات في القاهرة والجيزة</p>
+  <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+    <a href="https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent('مرحباً، تكييفي عطلان ومحتاج فني')}" target="_blank" style="background:#25D366;color:#fff;padding:11px 20px;border-radius:10px;font-weight:800;font-size:14px;text-decoration:none">💬 واتساب</a>
+    <button onclick="goEmergency()" style="background:rgba(239,68,68,.3);border:1.5px solid #ef4444;color:#fff;padding:11px 20px;border-radius:10px;font-weight:800;font-size:14px;cursor:pointer">🚨 طوارئ</button>
+  </div>
+</section>
+
+<div style="text-align:center;margin:20px 0 14px 0">
+  <h2 style="font-size:20px;font-weight:900;margin:0 0 4px 0">🎯 كل اللي محتاجه</h2>
+  
+<div class="card" style="cursor:pointer;margin:0 0 14px 0;padding:20px;background:linear-gradient(135deg,#7f1d1d,#450a0a);border:2px solid #ef4444;text-align:center" onclick="goEmergency()">
+  <div style="font-size:40px">🚨</div>
+  <h3 style="color:#fff;margin:8px 0;font-size:18px">طوارئ — تكييفك عطلان؟</h3>
+  <p style="color:#fecaca;font-size:13px;margin:0">فني متخصص خلال 3 ساعات — اضغط للحجز الفوري</p>
+  <div style="margin-top:10px;display:inline-block;background:#ef4444;color:#fff;padding:8px 20px;border-radius:10px;font-weight:900;font-size:13px">🔴 اطلب الآن</div>
+</div>
+
+  <p class="muted" style="margin:0;font-size:13px">اختار القسم</p>
+</div>
+
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px">
+  ${[['store','🛒','المتجر','أجهزة تكييف'],['services','🔧','اطلب فني','تركيب وصيانة'],['diagnosis','🤖','شخّص العطل','بالذكاء الاصطناعي'],['ads','📢','الإعلانات','عروض وخصومات'],['calculators','🧮','الحاسبات','BTU ومواسير'],['orders','📋','طلباتي','تابع حالاتك']].map(x=>`
+    <div class="card" style="cursor:pointer;text-align:center;padding:18px 10px;margin:0" onclick="setPage('${x[0]}')">
+      <div style="font-size:34px">${x[1]}</div>
+      <div style="font-weight:800;margin-top:8px;font-size:14px">${x[2]}</div>
+      <div class="muted" style="font-size:11px;margin-top:3px">${x[3]}</div>
+    </div>
+  `).join('')}
+</div>
+
+${state.user?`<div class="notice ok" style="margin-top:14px">👋 أهلاً ${esc(state.profile?.full_name||state.user.email)}</div>`:''}
+`,
+
+store:()=>`<h2>المتجر</h2>
+<div class="search"><input id="productSearch" placeholder="ابحث عن جهاز أو ماركة..." oninput="filterProducts()"></div>
+<div id="productGrid" class="grid"></div>`,
+
+ads:()=>{
+  var activeAds=ads.filter(function(a){return a.active});
+  if(!activeAds.length)return '<h2>الإعلانات</h2><div class="notice">لا توجد إعلانات حالياً.</div>';
+  return '<h2>📢 الإعلانات والعروض</h2>'+activeAds.map(function(a){
+    var product=products.find(function(p){return p.id===a.productId});
+    var final=product&&product.discount>0?Math.round(product.price*(100-product.discount)/100):(product?product.price:0);
+    return '<div class="card" style="border-right:5px solid '+(a.color||'#ff9900')+';background:linear-gradient(135deg,#151d2a,#1a2330)">'+
+      '<div style="display:flex;gap:12px;align-items:flex-start">'+
+        '<div style="font-size:36px">'+(a.emoji||'📢')+'</div>'+
+        '<div style="flex:1">'+
+          '<h3 style="margin:0 0 6px 0">'+esc(a.title)+'</h3>'+
+          '<p class="muted" style="margin:0 0 10px 0">'+esc(a.body)+'</p>'+
+          (product?'<div style="background:#0b1220;padding:10px;border-radius:10px;border:1px solid var(--border)"><div style="font-weight:700">'+esc(product.emoji||'📦')+' '+esc(product.name)+'</div><div class="price" style="margin:6px 0">'+money(final)+(product.discount>0?' <span style="font-size:13px;color:#f87171;text-decoration:line-through">'+money(product.price)+'</span>':'')+'</div><button class="btn primary" onclick="addCart(\''+product.id+'\');setPage(\'cart\')">🛒 اطلبه الآن</button></div>':'<div class="muted">المنتج غير متوفر</div>')+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+},
+
+cart:()=>{
+  var total=state.cart.reduce(function(s,x){return s+x.price*x.qty},0);
+  if(!state
