@@ -327,4 +327,653 @@ ads:()=>{
 
 cart:()=>{
   var total=state.cart.reduce(function(s,x){return s+x.price*x.qty},0);
-  if(!state
+  if(!state.cart.length)return '<h2>السلة</h2><div class="notice">السلة فارغة.</div>';
+  return '<h2>السلة</h2><div class="card">'+
+    state.cart.map(function(x,i){return '<div style="display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--border);padding:10px 0"><div><b>'+esc(x.name)+'</b><div class="muted">'+money(x.price)+' × '+x.qty+'</div></div><button class="btn red" onclick="removeCart('+i+')">حذف</button></div>'}).join('')+
+    '<h3>الإجمالي: <span class="price">'+money(total)+'</span></h3>'+
+    '<div class="actions"><button class="btn primary" onclick="checkoutCart()">تأكيد الطلب</button><button class="btn" onclick="state.cart=[];saveCart();render()">تفريغ السلة</button></div>'+
+  '</div>';
+},
+
+services:()=>`<h2>طلب خدمة</h2>
+${state.emergency?`<div class="card" style="background:linear-gradient(135deg,#7f1d1d,#450a0a);border:2px solid #ef4444;text-align:center"><div style="font-size:44px">🚨</div><h3 style="color:#fff;margin:8px 0">خدمة الطوارئ مفعّلة</h3><p style="color:#fecaca;font-size:13px;margin:0">سيصلك فني خلال 3 ساعات كحد أقصى</p></div>`:''}
+
+<div class="card">
+  <h3>🛠️ تفاصيل الخدمة</h3>
+  <div class="field"><label>نوع الخدمة</label><select id="svcType">
+    <option value="installation">🔧 تركيب تكييف</option>
+    <option value="uninstall">🔩 فك تكييف</option>
+    <option value="maintenance">🧰 صيانة عامة</option>
+    <option value="periodic">📅 صيانة دورية</option>
+    <option value="diagnosis">🔍 تشخيص عطل</option>
+    <option value="piping">🪈 تأسيس مواسير</option>
+    <option value="cleaning">🧼 تنظيف وغسيل</option>
+    <option value="gas">💨 شحن غاز</option>
+  </select></div>
+  <div class="grid" style="grid-template-columns:1fr 1fr">
+    <div class="field"><label>الماركة</label><input id="svcBrand" placeholder="Carrier / LG"></div>
+    <div class="field"><label>الموديل</label><input id="svcModel" placeholder="42VMC30"></div>
+    <div class="field"><label>القدرة (حصان)</label><select id="svcHP"><option value="">اختر</option><option>1.5</option><option>2.25</option><option>3</option><option>4</option><option>5</option></select></div>
+    <div class="field"><label>عدد الوحدات</label><input id="svcUnits" type="number" min="1" value="1"></div>
+  </div>
+  <div class="field"><label>درجة الاستعجال</label><select id="svcUrgency">
+    <option value="normal">🟢 عادي — 3 أيام</option>
+    <option value="urgent">🟡 مستعجل — 24 ساعة</option>
+    <option value="emergency">🔴 طارئ — نفس اليوم</option>
+  </select></div>
+</div>
+
+<div class="card">
+  <h3>📍 العنوان</h3>
+  <div class="field"><label>المدينة</label><input id="svcCity" placeholder="القاهرة"></div>
+  <div class="field"><label>العنوان بالتفصيل</label><textarea id="svcAddress" placeholder="الشارع، رقم العمارة، الدور"></textarea></div>
+  <div class="field"><label>رقم الموبايل</label><input id="svcPhone" placeholder="01xxxxxxxxx"></div>
+</div>
+
+<div class="card" style="border-right:4px solid #10b981">
+  <h3 style="color:#10b981">📅 حجز موعد</h3>
+  <div class="grid" style="grid-template-columns:1fr 1fr">
+    <div class="field"><label>يوم الزيارة</label><input type="date" id="bookingDate" onchange="updateDateDisplay()"><div id="bookingDateDisplay" style="font-size:12px;color:#10b981;font-weight:700;text-align:center;padding:6px;background:#052e2b;border-radius:8px;border:1px solid #065f46;margin-top:6px">📅 اختار يوم</div></div>
+    <div class="field"><label>الوقت</label><select id="bookingTime"><option value="09:00-12:00">🌅 صباحًا (9-12)</option><option value="12:00-15:00">☀️ الظهر (12-3)</option><option value="15:00-18:00">🌇 بعد الظهر (3-6)</option><option value="18:00-21:00">🌙 مساءً (6-9)</option></select></div>
+  </div>
+  <div class="field"><label>ملاحظات</label><input id="bookingNotes" placeholder="مثال: بعد العصر"></div>
+</div>
+
+<div class="card">
+  <h3>🔍 تفاصيل المشكلة</h3>
+  <div class="field"><label>وصف المشكلة</label><textarea id="svcProblem" placeholder="مثال: التكييف مش بيبرد"></textarea></div>
+  <div class="field"><label>كود الخطأ (لو ظاهر)</label><input id="svcErrorCode" placeholder="E1 / CH05"></div>
+  <div class="field"><label>ملاحظات إضافية</label><textarea id="svcNotes"></textarea></div>
+</div>
+
+${state.emergency?`
+<div class="card" style="border:2px solid #f59e0b;background:#1a1508">
+  <h3 style="color:#fbbf24;margin:0 0 10px 0">⚖️ إقرار وشروط خدمة الطوارئ</h3>
+  
+  <div style="background:#0b1220;padding:12px;border-radius:10px;border:1px solid var(--border);font-size:13px;line-height:1.8;max-height:280px;overflow-y:auto">
+    <p style="margin:0 0 10px 0"><b style="color:#fbbf24">1) رسوم الاستعجال:</b><br>
+    أوافق طواعيةً على سداد رسوم استعجال إضافية بنسبة <b style="color:#ef4444">50%</b> من قيمة الخدمة الأساسية، مقابل تنفيذ الخدمة خلال <b>3 ساعات</b> كحد أقصى من تأكيد الطلب.</p>
+
+    <p style="margin:0 0 10px 0"><b style="color:#fbbf24">2) نطاق الخدمة:</b><br>
+    خدمة الطوارئ تشمل: التشخيص، الإصلاح، أو التركيب الفوري بحسب طبيعة العطل. لا تشمل توريد قطع غيار غير متوفرة بالسيارة.</p>
+
+    <p style="margin:0 0 10px 0"><b style="color:#fbbf24">3) عدم الوصول في الوقت المحدد:</b><br>
+    في حال تأخر الفني عن 3 ساعات دون عذر قهري، يحق للعميل <b>إلغاء الطلب</b> وإعفاؤه كليًا من رسوم الاستعجال.</p>
+
+    <p style="margin:0 0 10px 0"><b style="color:#fbbf24">4) الإلغاء من جانب العميل:</b><br>
+    في حال إلغاء العميل للطلب بعد انطلاق الفني، تُحتسب رسوم استعجال جزئية بنسبة <b>25%</b> لتغطية تكاليف الانتقال.</p>
+
+    <p style="margin:0 0 10px 0"><b style="color:#fbbf24">5) ظروف قهرية:</b><br>
+    تُعفى الشركة من الالتزام بزمن الاستجابة في حالات: الأمطار الغزيرة، إغلاق الطرق، أو القيود الأمنية، مع إخطار العميل فورًا.</p>
+
+    <p style="margin:0 0 10px 0"><b style="color:#fbbf24">6) الضمان:</b><br>
+    الأعمال المنفذة خلال خدمة الطوارئ تحصل على ضمان <b>30 يومًا</b> على العمالة فقط، ولا يشمل الضمان قطع الغيار الموردة.</p>
+
+    <p style="margin:0"><b style="color:#fbbf24">7) الموافقة:</b><br>
+    بمجرد تحديد المربع أدناه وإرسال الطلب، يُعدّ ذلك موافقة إلكترونية معتمدة تُغني عن التوقيع اليدوي وفق قانون المعاملات الإلكترونية.</p>
+  </div>
+
+  <label style="display:flex;gap:10px;align-items:flex-start;margin-top:14px;cursor:pointer;background:#0b1220;padding:12px;border-radius:10px;border:1px solid #f59e0b">
+    <input type="checkbox" id="emergencyTerms" style="width:22px;height:22px;margin-top:2px;cursor:pointer;flex-shrink:0">
+    <span style="font-size:13px;line-height:1.6">
+      <b style="color:#fbbf24">أُقرّ بأنني قرأت وفهمت ووافقت على جميع الشروط والأحكام أعلاه</b>، وأتحمل كامل المسؤولية القانونية عن قرار طلب خدمة الطوارئ.
+    </span>
+  </label>
+</div>
+`:''}
+
+<button class="btn primary" style="width:100%;padding:15px;font-size:16px" onclick="createServiceOrder()">📤 إرسال طلب الخدمة</button>`,
+
+diagnosis:()=>`<h2>تشخيص الأعطال</h2>
+<div class="card">
+  <h3>🤖 التشخيص بالذكاء الاصطناعي</h3>
+  <p class="muted">اوصف العطل بكلامك، والـ AI هيقولك السبب والحل.</p>
+  <div class="field"><label>وصف العطل</label><textarea id="aiSymptom" placeholder="التكييف شغال بس مش بيبرد"></textarea></div>
+  <div class="field"><label>نوع الجهاز (اختياري)</label><input id="aiDevice" placeholder="Carrier 1.5 HP"></div>
+  <button class="btn primary" onclick="aiDiagnose()" id="aiBtn">🤖 شخّص بالذكاء الاصطناعي</button>
+  <div id="aiResult"></div>
+</div>
+<div class="card">
+  <h3>📖 قاعدة الأكواد</h3>
+  <div class="grid">
+    <div class="field"><label>الماركة</label><select id="faultBrand"><option value="">كل الماركات</option>${[...new Set(faultDB.map(x=>x[0]))].map(x=>`<option>${x}</option>`).join('')}</select></div>
+    <div class="field"><label>الكود</label><input id="faultCode" placeholder="E3" oninput="renderFaults()"></div>
+  </div>
+  <div id="faultResults"></div>
+</div>`,
+
+calculators:()=>`<h2>حاسبات HVAC</h2>
+<div class="card" style="border-right:5px solid #f59e0b;background:linear-gradient(135deg,#1a1508,#151d2a)">
+  <h3 style="color:#fbbf24;margin:0 0 8px 0">🪈 حاسبة تأسيس المواسير</h3>
+  <p class="muted" style="margin:0 0 14px 0;font-size:13px">اعرف سعر التأسيس قبل ما تكلّم أي فني.</p>
+  <div class="field"><label>قدرة الجهاز (حصان)</label><select id="pipeHP"><option value="1.5">1.5</option><option value="2.25">2.25</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+  <div class="field"><label>طول المواسير (متر)</label><input id="pipeLength" type="number" min="1" step="0.5" value="3"></div>
+  <div class="field"><label>عدد الوحدات</label><input id="pipeUnits" type="number" min="1" value="1"></div>
+  <div class="field"><label>نوع التركيب</label><select id="pipeType"><option value="standard">🏠 عادي (ظاهر)</option><option value="hidden">🔨 مخفي (داخل الحوائط)</option><option value="decor">🎨 ديكور</option></select></div>
+  <button class="btn primary" onclick="calcPipes()" style="background:#f59e0b;color:#111;font-weight:900">🧮 احسب السعر</button>
+  <div id="pipeResult"></div>
+</div>
+<div class="card">
+  <h3>📐 تقدير القدرة</h3>
+  <div class="grid" style="grid-template-columns:1fr 1fr 1fr">
+    <div class="field"><label>الطول (م)</label><input id="calcLength" type="number" min="0" step="0.1" placeholder="4"></div>
+    <div class="field"><label>العرض (م)</label><input id="calcWidth" type="number" min="0" step="0.1" placeholder="3"></div>
+    <div class="field"><label>الارتفاع (م)</label><input id="calcHeight" type="number" min="0" step="0.1" value="2.7"></div>
+  </div>
+  <div class="field"><label>أو اكتب الحجم الكلي (م³)</label><input id="vol" type="number" min="0" placeholder="اختياري"></div>
+  <div class="field"><label>نوع المكان</label><select id="factor">
+    <option value="300">🏠 عادي (300)</option>
+    <option value="350">🌤️ متوسط (350)</option>
+    <option value="400">☀️ عالي/دور أخير (400)</option>
+    <option value="450">🔥 محل تجاري (450)</option>
+    <option value="500">🍽️ مطعم (500)</option>
+  </select></div>
+  <button class="btn primary" onclick="calcCapacity()">احسب</button>
+  <div id="capResult"></div>
+</div>`,
+
+orders:()=>`<h2>طلباتي</h2><div id="ordersList" class="card">جارٍ التحميل...</div>`,
+admin:()=>(!state.user || (state.role!=='admin' && ADMIN_EMAILS.indexOf(state.user.email)===-1))?'<h2>لوحة الإدارة</h2><div class="notice err" style="padding:20px;text-align:center;font-size:16px">🔒 غير مصرح<br><br>هذه الصفحة للمشرفين فقط<br><br><button class="btn" onclick="setPage(\'home\')">العودة للرئيسية</button></div>':`<h2>لوحة الإدارة</h2>
+<div class="card">
+  <h3>➕ إضافة منتج</h3>
+  <div class="grid" style="grid-template-columns:1fr 1fr">
+    <div class="field"><label>الاسم</label><input id="npName"></div>
+    <div class="field"><label>الماركة</label><input id="npBrand"></div>
+    <div class="field"><label>السعر</label><input id="npPrice" type="number"></div>
+    <div class="field"><label>الخصم %</label><input id="npDiscount" type="number" value="0" min="0" max="90"></div>
+    <div class="field"><label>المخزون</label><input id="npStock" type="number" value="1"></div>
+    <div class="field"><label>أيقونة</label><input id="npEmoji" placeholder="❄️"></div>
+  </div>
+  <div class="field"><label>وصف</label><input id="npDesc"></div>
+  <button class="btn green" onclick="addProduct()">➕ إضافة</button>
+</div>
+<div class="card">
+  <h3>🛍️ المنتجات (${products.length})</h3>
+  <div id="adminProducts">${renderAdminProducts()}</div>
+</div>
+<div class="card">
+  <h3>📢 الإعلانات (${ads.length})</h3>
+  <div class="grid" style="grid-template-columns:1fr 1fr">
+    <div class="field"><label>العنوان</label><input id="adTitle"></div>
+    <div class="field"><label>المنتج</label><select id="adProduct"><option value="">— بدون —</option>${products.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('')}</select></div>
+  </div>
+  <div class="field"><label>الوصف</label><textarea id="adBody" style="min-height:60px"></textarea></div>
+  <div class="grid" style="grid-template-columns:1fr 1fr">
+    <div class="field"><label>أيقونة</label><input id="adEmoji" value="📢" maxlength="4"></div>
+    <div class="field"><label>اللون</label><select id="adColor"><option value="#ef4444">🔴 أحمر</option><option value="#f59e0b">🟡 أصفر</option><option value="#10b981">🟢 أخضر</option><option value="#3b82f6">🔵 أزرق</option></select></div>
+  </div>
+  <button class="btn green" onclick="addAd()">➕ إضافة</button>
+</div>
+<div class="card">
+  <h3>📋 الإعلانات الحالية</h3>
+  <div id="adminAds">${renderAdminAds()}</div>
+</div><div class="card">
+  <h3>📋 الطلبات</h3>
+  <div id="adminOrders">جارٍ التحميل...</div>
+</div>`
+};
+
+/* ========== AUTH ========== */
+function openAuth(){document.getElementById('authModal').classList.add('open');document.getElementById('authMsg').innerHTML='';setAuthMode('login')}
+function closeAuth(){document.getElementById('authModal').classList.remove('open')}
+function toggleAuthMode(){setAuthMode(state.authMode==='login'?'signup':'login')}
+function setAuthMode(m){
+  state.authMode=m;
+  document.getElementById('authTitle').textContent=m==='login'?'تسجيل الدخول':'إنشاء حساب';
+  document.getElementById('authSubmit').textContent=m==='login'?'دخول':'إنشاء الحساب';
+  document.getElementById('authSwitch').textContent=m==='login'?'إنشاء حساب جديد':'لدي حساب';
+  document.getElementById('nameWrap').classList.toggle('hidden',m==='login');
+  document.getElementById('phoneWrap').classList.toggle('hidden',m==='login');
+}
+
+async function submitAuth(e){
+  e.preventDefault();
+  var email=document.getElementById('authEmail').value.trim();
+  var password=document.getElementById('authPassword').value;
+  var name=(document.getElementById('authName').value||'').trim();
+  var phone=(document.getElementById('authPhone').value||'').trim();
+
+  if(DEMO){
+    var users=safeRead('ac_users',[]);
+    if(state.authMode==='signup'){
+      if(users.some(function(u){return u.email===email})){document.getElementById('authMsg').innerHTML='<div class="notice err">البريد مستخدم</div>';return}
+      var isFirst=users.length===0;
+      var u={id:'u'+Date.now(),email:email,password:password,full_name:name||'عميل جديد',phone:phone,role:isFirst?'admin':'client'};
+      users.push(u);
+      safeWrite('ac_users',users);
+      state.user=u;state.profile=u;state.role=u.role;
+    }else{
+      var found=users.find(function(u){return u.email===email&&u.password===password});
+      if(!found){document.getElementById('authMsg').innerHTML='<div class="notice err">البريد أو كلمة المرور غير صحيحة</div>';return}
+      state.user=found;state.profile=found;state.role=found.role||'client';
+    }
+    closeAuth();render();return;
+  }
+
+  var result;
+  if(state.authMode==='signup'){
+    result=await db.auth.signUp({email:email,password:password});
+    if(result.error){document.getElementById('authMsg').innerHTML='<div class="notice err">'+esc(result.error.message)+'</div>';return}
+    if(result.data.user){
+      await db.from('users_profile').insert({id:result.data.user.id,full_name:name||'عميل جديد',phone:phone||null,role:'client'});
+      state.user=result.data.user;state.role='client';
+    }
+  }else{
+    result=await db.auth.signInWithPassword({email:email,password:password});
+    if(result.error){document.getElementById('authMsg').innerHTML='<div class="notice err">'+esc(result.error.message)+'</div>';return}
+    state.user=result.data.user;state.role='client';
+  }
+  closeAuth();render();
+}
+async function loginWithGoogle(){
+  if(DEMO){
+    alert('🔵 تسجيل الدخول بـ Google\n\nهذه الميزة تحتاج:\n• رفع التطبيق على الإنترنت (HTTPS)\n• ربط Supabase\n• تسجيل التطبيق في Google Cloud\n\nسنفعّلها بعد رفع التطبيق على الإنترنت.\n\nدلوقتي استخدم:\n[إنشاء حساب جديد] بالبريد الإلكتروني.');
+    return;
+  }
+  try{
+    var result=await db.auth.signInWithOAuth({
+      provider:'google',
+      options:{redirectTo:window.location.origin+window.location.pathname}
+    });
+    if(result.error)throw result.error;
+  }catch(e){
+    alert('تعذر الاتصال بـ Google: '+e.message);
+  }
+}
+
+async function loginWithFacebook(){
+  if(DEMO){
+    alert('📘 تسجيل الدخول بـ Facebook\n\nهذه الميزة تحتاج:\n• رفع التطبيق على الإنترنت (HTTPS)\n• ربط Supabase\n• تسجيل التطبيق في Facebook Developers\n\nسنفعّلها بعد رفع التطبيق على الإنترنت.\n\nدلوقتي استخدم:\n[إنشاء حساب جديد] بالبريد الإلكتروني.');
+    return;
+  }
+  try{
+    var result=await db.auth.signInWithOAuth({
+      provider:'facebook',
+      options:{redirectTo:window.location.origin+window.location.pathname}
+    });
+    if(result.error)throw result.error;
+  }catch(e){
+    alert('تعذر الاتصال بـ Facebook: '+e.message);
+  }
+}
+
+function logout(){
+  state.user=null;state.profile=null;state.role=DEMO?'admin':'guest';
+  setPage('home');
+    }
+  
+/* ========== PRODUCTS ========== */
+function renderAdminProducts(){
+  if(!products.length)return '<div class="muted">لا توجد منتجات</div>';
+  return products.map(function(p,i){
+    var final=p.discount>0?Math.round(p.price*(100-p.discount)/100):p.price;
+    return '<div style="display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--border);padding:10px 0;align-items:center">'+
+      '<div style="flex:1"><b>'+(p.emoji||'📦')+' '+esc(p.name)+'</b>'+
+      '<div class="muted">'+esc(p.brand||'')+' — '+money(final)+(p.discount>0?' <span style="color:#f87171">(-'+p.discount+'%)</span>':'')+'</div>'+
+      '<div class="muted">مخزون: '+p.stock+'</div></div>'+
+      '<button class="btn red" onclick="deleteProduct('+i+')">🗑️</button></div>';
+  }).join('');
+}
+
+function filterProducts(){
+  var q=(document.getElementById('productSearch')?.value||'').toLowerCase();
+  var arr=products.filter(function(p){return (p.name+' '+(p.brand||'')).toLowerCase().includes(q)});
+  document.getElementById('productGrid').innerHTML=arr.map(function(p){
+    var final=p.discount>0?Math.round(p.price*(100-p.discount)/100):p.price;
+    return '<div class="card"><span class="pill">'+esc(p.brand||'')+'</span>'+
+      '<h3>'+(p.emoji||'📦')+' '+esc(p.name)+'</h3>'+
+      '<div class="price">'+money(final)+(p.discount>0?' <span style="font-size:13px;color:#f87171;text-decoration:line-through">'+money(p.price)+'</span>':'')+'</div>'+
+      '<p class="muted">متاح: '+p.stock+'</p>'+
+      '<button class="btn primary" '+(p.stock<1?'disabled':'')+' onclick="addCart(\''+p.id+'\')">أضف للسلة</button></div>';
+  }).join('');
+}
+
+function addProduct(){
+  var name=document.getElementById('npName').value.trim();
+  var brand=document.getElementById('npBrand').value.trim();
+  var price=parseFloat(document.getElementById('npPrice').value);
+  var discount=parseFloat(document.getElementById('npDiscount').value)||0;
+  var stock=parseInt(document.getElementById('npStock').value)||0;
+  var emoji=document.getElementById('npEmoji').value.trim()||'📦';
+  var description=document.getElementById('npDesc').value.trim();
+  if(!name||!price||price<=0){alert('اكتب الاسم والسعر');return}
+  products.push({id:'p'+Date.now(),name:name,brand:brand,price:price,stock:stock,emoji:emoji,description:description,discount:Math.min(90,Math.max(0,discount))});
+  saveProducts();alert('✅ تم إضافة المنتج');render();
+}
+
+function deleteProduct(i){
+  if(!confirm('حذف "'+products[i].name+'"؟'))return;
+  products.splice(i,1);saveProducts();render();
+}
+
+/* ========== ADS ========== */
+function renderAdminAds(){
+  if(!ads.length)return '<div class="muted">لا توجد إعلانات</div>';
+  return ads.map(function(a,i){
+    return '<div style="display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--border);padding:10px 0;align-items:center">'+
+      '<div style="flex:1"><b>'+(a.emoji||'📢')+' '+esc(a.title)+'</b>'+
+      '<div class="muted">'+esc(a.body)+'</div>'+
+      '<div class="muted">'+(a.active?'✅ نشط':'⏸️ متوقف')+'</div></div>'+
+      '<div style="display:flex;gap:6px">'+
+      '<button class="btn" onclick="toggleAd('+i+')">'+(a.active?'⏸️':'▶️')+'</button>'+
+      '<button class="btn red" onclick="deleteAd('+i+')">🗑️</button></div></div>';
+  }).join('');
+}
+
+function addAd(){
+  var title=document.getElementById('adTitle').value.trim();
+  var body=document.getElementById('adBody').value.trim();
+  var productId=document.getElementById('adProduct').value;
+  var emoji=document.getElementById('adEmoji').value.trim()||'📢';
+  var color=document.getElementById('adColor').value;
+  if(!title||!body){alert('اكتب عنوان ووصف');return}
+  ads.push({id:'ad'+Date.now(),title:title,body:body,productId:productId,emoji:emoji,color:color,active:true});
+  saveAds();alert('✅ تم إضافة الإعلان');render();
+}
+
+function toggleAd(i){ads[i].active=!ads[i].active;saveAds();render()}
+function deleteAd(i){if(!confirm('حذف؟'))return;ads.splice(i,1);saveAds();render()}
+
+/* ========== CART ========== */
+function addCart(id){
+  var p=products.find(function(x){return x.id===id});
+  if(!p)return;
+  var x=state.cart.find(function(x){return x.id===id});
+  if(x)x.qty++;else state.cart.push({id:p.id,name:p.name,price:p.price,qty:1,emoji:p.emoji});
+  saveCart();render();toast('تمت الإضافة');
+}
+function removeCart(i){state.cart.splice(i,1);saveCart();render()}
+
+async function checkoutCart(){
+  if(!state.user){openAuth();return}
+  if(!state.cart.length)return;
+  var total=state.cart.reduce(function(s,x){return s+x.price*x.qty},0);
+  var order={id:'o'+Date.now(),client_id:state.user.id,service_type:'store',details:{items:state.cart,payment_method:'cod'},total_amount:total,status:'pending',created_at:new Date().toISOString()};
+  var orders=safeRead('ac_orders',[]);
+  orders.unshift(order);safeWrite('ac_orders',orders);
+  state.cart=[];saveCart();alert('✅ تم تسجيل الطلب');setPage('orders');
+}
+
+/* ========== SERVICES / ORDERS ========== */
+async function createServiceOrder(){
+  if(!state.user){openAuth();return}
+  var order={
+    id:'o'+Date.now(),
+    client_id:state.user.id,
+    service_type:document.getElementById('svcType').value,
+    details:{
+      brand:document.getElementById('svcBrand').value.trim(),
+      model:document.getElementById('svcModel').value.trim(),
+      hp:document.getElementById('svcHP').value,
+      units:document.getElementById('svcUnits').value,
+      urgency:document.getElementById('svcUrgency').value,
+      city:document.getElementById('svcCity').value.trim(),
+      address:document.getElementById('svcAddress').value.trim(),
+      phone:document.getElementById('svcPhone').value.trim(),
+      problem:document.getElementById('svcProblem').value.trim(),
+      errorCode:document.getElementById('svcErrorCode').value.trim(),
+      notes:document.getElementById('svcNotes').value.trim(),
+      bookingDate:document.getElementById('bookingDate').value,
+      bookingTime:document.getElementById('bookingTime').value,
+      bookingNotes:document.getElementById('bookingNotes').value.trim()
+    },
+    total_amount:0,
+    status:'pending',
+    created_at:new Date().toISOString()
+  };
+  if(!order.details.phone){alert('اكتب رقم الموبايل');return}
+  if(!order.details.address){alert('اكتب العنوان');return}
+  if(!order.details.bookingDate){alert('اختار يوم الزيارة');return}
+  if(state.emergency){
+    var agreed=document.getElementById('emergencyTerms');
+    if(!agreed||!agreed.checked){alert('⚠️ يجب الموافقة على شروط الطوارئ');return}
+    order.details.emergency=true;
+    order.details.urgencyFee='50%';
+  }
+  var orders=safeRead('ac_orders',[]);
+  orders.unshift(order);safeWrite('ac_orders',orders);
+  alert('✅ تم إرسال طلب الخدمة');
+  state.emergency=false;
+  setPage('orders');
+}
+
+function loadOrders(){
+  var el=document.getElementById('ordersList');
+  if(!el)return;
+  if(!state.user){el.innerHTML='<div class="notice">سجّل الدخول لعرض طلباتك.</div>';return}
+  var orders=safeRead('ac_orders',[]).filter(function(x){return x.client_id===state.user.id});
+  if(!orders.length){el.innerHTML='<div class="muted">لا توجد طلبات بعد.</div>';return}
+  el.innerHTML=orders.map(orderCard).join('');
+}
+
+function orderCard(o){
+  try{
+    var d=o.details||{};
+    var t=(o.service_type==='store')?'🛒 طلب متجر':('🔧 خدمة: '+(o.service_type||''));
+    var dt=new Date(o.created_at).toLocaleString('ar-EG');
+    var amt=Number(o.total_amount||0).toLocaleString('ar-EG')+' ج.م';
+    var s='<div style="border-bottom:1px solid #26334d;padding:12px 0">';
+    s+='<div style="font-weight:700">#'+String(o.id).slice(0,8)+'</div>';
+    s+='<div style="color:#94a3b8;font-size:11px">'+dt+'</div>';
+    s+='<div style="margin:6px 0">'+t+'</div>';
+    s+='<div style="color:#67e8f9;font-weight:800">'+amt+'</div>';
+    if(d.bookingDate){s+='<div style="color:#10b981;font-size:12px;margin-top:6px">📅 '+d.bookingDate+' '+(d.bookingTime||'')+'</div>'}
+    if(d.problem){s+='<div style="color:#94a3b8;font-size:12px;margin-top:4px">📝 '+String(d.problem).slice(0,80)+'</div>'}
+    if(d.emergency){s+='<div style="color:#f87171;font-size:12px;margin-top:4px">🚨 طوارئ (رسوم +50%)</div>'}
+    s+='</div>';
+    return s;
+  }catch(e){
+    return '<div style="color:#f87171;padding:8px">خطأ في عرض الطلب</div>';
+  }
+}
+
+/* ========== CALCULATORS ========== */
+function updateDateDisplay(){
+  var input=document.getElementById('bookingDate');
+  var display=document.getElementById('bookingDateDisplay');
+  if(!input||!display)return;
+  if(!input.value){display.textContent='📅 اختار يوم';return}
+  var date=new Date(input.value+'T00:00:00');
+  var days=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  var months=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  var today=new Date();
+  var isToday=date.toDateString()===today.toDateString();
+  var tomorrow=new Date(today);tomorrow.setDate(today.getDate()+1);
+  var isTomorrow=date.toDateString()===tomorrow.toDateString();
+  var prefix='📅';
+  if(isToday)prefix='🟢 النهاردة';
+  else if(isTomorrow)prefix='🟡 بكرة';
+  display.textContent=prefix+' — '+days[date.getDay()]+' '+date.getDate()+' '+months[date.getMonth()];
+}
+
+function formatArabicDate(dateStr){
+  if(!dateStr)return '';
+  try{
+    var date=new Date(dateStr+'T00:00:00');
+    var days=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+    var months=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+    return days[date.getDay()]+' '+date.getDate()+' '+months[date.getMonth()];
+  }catch(e){return dateStr}
+}
+
+function calcPipes(){
+  var hp=parseFloat(document.getElementById('pipeHP').value);
+  var len=parseFloat(document.getElementById('pipeLength').value)||0;
+  var units=parseInt(document.getElementById('pipeUnits').value)||1;
+  var type=document.getElementById('pipeType').value;
+  var result=document.getElementById('pipeResult');
+  if(len<=0){result.innerHTML='<div class="notice err">اكتب الطول</div>';return}
+  var base=pipePrices.perMeter[hp]||200;
+  var mult=pipePrices.typeMultiplier[type]||1;
+  var pipeCost=base*len*mult;
+  var total=(pipeCost+pipePrices.accessories+pipePrices.installPerUnit)*units;
+  var discount=0;
+  if(units>=3)discount=pipePrices.discount3PlusUnits/100;
+  else if(units===2)discount=pipePrices.discount2Units/100;
+  var finalTotal=Math.round(total*(1-discount));
+  var names={standard:'تركيب عادي',hidden:'تركيب مخفي',decor:'تركيب ديكور'};
+  result.innerHTML='<div class="notice ok"><b style="color:#fbbf24">💰 التكلفة التقديرية</b><br><br>'+
+    'قدرة: <b>'+hp+' حصان</b><br>'+
+    'نوع: <b>'+names[type]+'</b><br>'+
+    'طول: <b>'+len+' متر</b><br>'+
+    'عدد: <b>'+units+'</b><br>'+
+    'سعر المتر: <b>'+money(base)+'</b><br>'+
+    (discount>0?'خصم: <b style="color:#10b981">-'+Math.round(discount*100)+'%</b><br>':'')+
+    '<hr style="border-color:var(--border);margin:12px 0">'+
+    '<div style="font-size:18px;text-align:center;color:#fbbf24;font-weight:900">الإجمالي: '+money(finalTotal)+'</div>'+
+    '<p class="muted" style="font-size:11px;margin-top:8px;text-align:center">⚠️ سعر تقديري</p>'+
+    '<button class="btn primary" style="margin-top:10px;background:#f59e0b;color:#111" onclick="orderPiping('+finalTotal+')">🔧 اطلب تأسيس</button></div>';
+}
+
+function orderPiping(price){
+  state.emergency=false;
+  setPage('services');
+  setTimeout(function(){
+    var el=document.getElementById('svcType');if(el)el.value='piping';
+    var n=document.getElementById('svcNotes');if(n)n.value='طلب تأسيس — تقديري: '+money(price);
+    window.scrollTo({top:0,behavior:'smooth'});
+  },150);
+}
+
+function calcCapacity(){
+  var length=parseFloat(document.getElementById('calcLength')?.value)||0;
+  var width=parseFloat(document.getElementById('calcWidth')?.value)||0;
+  var height=parseFloat(document.getElementById('calcHeight')?.value)||2.7;
+  var manualVol=parseFloat(document.getElementById('vol')?.value)||0;
+  var result=document.getElementById('capResult');
+  var volume=0,source='';
+  if(length>0&&width>0){volume=length*width*height;source='المساحة: '+length+'×'+width+'×'+height+' = '+volume.toFixed(1)+' م³'}
+  else if(manualVol>0){volume=manualVol;source='الحجم: '+volume+' م³'}
+  else{result.innerHTML='<div class="notice err">ادخل الأبعاد أو الحجم</div>';return}
+  var factor=Number(document.getElementById('factor').value);
+  var btu=volume*factor;
+  var hp='';
+  if(btu<=15000)hp='1.5 حصان';
+  else if(btu<=22500)hp='2.25 حصان';
+  else if(btu<=30000)hp='3 حصان';
+  else if(btu<=48000)hp='4 حصان';
+  else if(btu<=60000)hp='5 حصان';
+  else hp='أكثر من 5 حصان';
+  result.innerHTML='<div class="notice ok">'+source+'<br>معامل: <b>'+factor+'</b><br>الحمل: <b>'+btu.toLocaleString('ar-EG')+' BTU/h</b><br>الاختيار: <b style="color:#67e8f9;font-size:18px">'+hp+'</b></div>';
+}
+
+/* ========== AI ========== */
+async function aiDiagnose(){
+  var symptom=(document.getElementById('aiSymptom')?.value||'').trim();
+  var device=(document.getElementById('aiDevice')?.value||'').trim();
+  var result=document.getElementById('aiResult');
+  var btn=document.getElementById('aiBtn');
+  if(!symptom){result.innerHTML='<div class="notice err">اكتب وصف العطل</div>';return}
+  if(!CONFIG.GEMINI_API_KEY||CONFIG.GEMINI_API_KEY.includes('YOUR_')){result.innerHTML='<div class="notice err">⚠️ مفتاح AI غير مُعد</div>';return}
+  btn.disabled=true;btn.textContent='⏳ جارٍ التحليل...';
+  result.innerHTML='<div class="notice">🔍 جارٍ التحليل...</div>';
+  var prompt='أنت مهندس تكييف محترف. الجهاز: '+(device||'غير محدد')+'. الشكوى: '+symptom+'. اكتب 3 أسباب محتملة مرتبة مع الفحص والحل. بالعربي المصري المبسط.';
+  try{
+    var r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key='+CONFIG.GEMINI_API_KEY,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})
+    });
+    var data=await r.json();
+    if(!r.ok)throw new Error(data?.error?.message||'خطأ');
+    var text=data?.candidates?.[0]?.content?.parts?.[0]?.text||'لم يصل رد.';
+    result.innerHTML='<div class="notice ok"><b>🤖 التحليل:</b><br><br>'+esc(text).replace(/\n/g,'<br>')+'</div>';
+  }catch(e){
+    result.innerHTML='<div class="notice err">تعذر التحليل: '+esc(e.message||e)+'</div>';
+  }finally{btn.disabled=false;btn.textContent='🤖 شخّص بالذكاء الاصطناعي'}
+}
+
+function renderFaults(){
+  var b=(document.getElementById('faultBrand')?.value||'').toLowerCase();
+  var c=(document.getElementById('faultCode')?.value||'').trim().toLowerCase();
+  var rows=faultDB.filter(function(x){return (!b||x[0].toLowerCase()===b)&&(!c||x[1].toLowerCase().includes(c))});
+  document.getElementById('faultResults').innerHTML=rows.map(function(x){
+    return '<div class="notice"><b>'+esc(x[0])+' '+esc(x[1])+'</b><br>'+esc(x[2])+'<br><span class="muted">'+esc(x[3])+'</span></div>';
+  }).join('')||'<div class="muted">لا توجد نتيجة</div>';
+}
+
+/* ========== EMERGENCY ========== */
+function goEmergency(){
+  state.emergency=true;
+  setPage('services');
+  setTimeout(function(){
+    var el=document.getElementById('svcUrgency');
+    if(el){el.value='emergency';el.style.background='#7f1d1d';el.style.borderColor='#ef4444'}
+    window.scrollTo({top:0,behavior:'smooth'});
+  },150);
+}
+
+/* ========== UTILS ========== */
+function toast(t){
+  var x=document.createElement('div');
+  x.className='notice ok';
+  x.style.cssText='position:fixed;bottom:15px;left:15px;z-index:99';
+  x.textContent=t;
+  document.body.appendChild(x);
+  setTimeout(function(){x.remove()},1800);
+}
+async function loadAdmin(){
+  var el=document.getElementById('adminOrders');
+  if(!el)return;
+  var orders=safeRead('ac_orders',[]);
+  if(!orders.length){el.innerHTML='<div class="muted">لا توجد طلبات</div>';return}
+  el.innerHTML=orders.map(function(o,i){
+    var d=o.details||{};
+    var name=(d.brand||'')+' '+(d.model||'');
+    var client=esc(o.client_id||'').slice(0,8);
+    return '<div style="border-bottom:1px solid var(--border);padding:10px 0">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center">'+
+        '<b>#'+String(o.id).slice(0,8)+'</b>'+
+        '<span class="pill">'+esc(o.status||'pending')+'</span>'+
+      '</div>'+
+      '<div class="muted" style="font-size:12px;margin:4px 0">'+esc(o.service_type||'')+'</div>'+
+      (name.trim()?'<div class="muted" style="font-size:12px">🔧 '+esc(name)+'</div>':'')+
+      (d.phone?'<div class="muted" style="font-size:12px">📞 '+esc(d.phone)+'</div>':'')+
+      (d.address?'<div class="muted" style="font-size:12px">📍 '+esc(d.address)+'</div>':'')+
+      (d.bookingDate?'<div style="color:#10b981;font-size:12px">📅 '+d.bookingDate+' '+(d.bookingTime||'')+'</div>':'')+
+      (d.emergency?'<div style="color:#f87171;font-size:12px">🚨 طوارئ</div>':'')+
+      '<div class="actions" style="margin-top:6px">'+
+        '<button class="btn" onclick="setOrderStatus('+i+',\'confirmed\')">✅ تأكيد</button>'+
+        '<button class="btn" onclick="setOrderStatus('+i+',\'completed\')">✔️ إتمام</button>'+
+        '<button class="btn red" onclick="setOrderStatus('+i+',\'cancelled\')">❌ إلغاء</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function setOrderStatus(i,status){
+  var orders=safeRead('ac_orders',[]);
+  if(!orders[i])return;
+  orders[i].status=status;
+  safeWrite('ac_orders',orders);
+  render();
+}
+
+function postRender(){
+  if(state.page==='store')filterProducts();
+  if(state.page==='diagnosis')renderFaults();
+  if(state.page==='orders')loadOrders();
+  if(state.page==='admin')loadAdmin();
+  if(state.page==='services'){
+    setTimeout(function(){
+      var d=document.getElementById('bookingDate');
+      if(d&&!d.value){
+        var t=new Date();
+        var yyyy=t.getFullYear();
+        var mm=String(t.getMonth()+1).padStart(2,'0');
+        var dd=String(t.getDate()).padStart(2,'0');
+        d.value=yyyy+'-'+mm+'-'+dd;
+        d.min=yyyy+'-'+mm+'-'+dd;
+        updateDateDisplay();
+      }
+    },50);
+  }
+}
+
+function init(){
+  render();
+}
+
+init();
+</script>
+</body>
+</html>
