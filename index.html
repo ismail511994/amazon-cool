@@ -124,7 +124,7 @@ const CONFIG={
 };
   const CALLMEBOT_PHONE = '201275998196';
   const CALLMEBOT_KEY = '4104053';
-  const DEFAULT_COUPONS=[
+  
 const isConfigured=CONFIG.SUPABASE_URL.startsWith('https://')&&!CONFIG.SUPABASE_URL.includes('YOUR_');
 const DEMO=CONFIG.DEMO_MODE||!isConfigured;
 const db=(!DEMO&&window.supabase)?window.supabase.createClient(CONFIG.SUPABASE_URL,CONFIG.SUPABASE_ANON_KEY):null;
