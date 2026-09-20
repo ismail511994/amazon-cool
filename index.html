@@ -523,6 +523,8 @@ admin:()=>(!state.user || (state.role!=='admin' && ADMIN_EMAILS.indexOf(state.us
 function openAuth(){document.getElementById('authModal').classList.add('open');document.getElementById('authMsg').innerHTML='';setAuthMode('login')}
 function closeAuth(){document.getElementById('authModal').classList.remove('open')}
 function toggleAuthMode(){setAuthMode(state.authMode==='login'?'signup':'login')}
+  function saveSession(){if(state.user)safeWrite('ac_current_user',{id:state.user.id,email:state.user.email,full_name:state.profile?.full_name||state.user.full_name||'',phone:state.profile?.phone||state.user.phone||'',role:state.role||'client'})}
+  function clearSession(){try{localStorage.removeItem('ac_current_user')}catch(e){}}
 function setAuthMode(m){
   state.authMode=m;
   document.getElementById('authTitle').textContent=m==='login'?'تسجيل الدخول':'إنشاء حساب';
@@ -553,6 +555,7 @@ async function submitAuth(e){
       if(!found){document.getElementById('authMsg').innerHTML='<div class="notice err">البريد أو كلمة المرور غير صحيحة</div>';return}
       state.user=found;state.profile=found;state.role=found.role||'client';
     }
+    saveSession();
     closeAuth();render();return;
   }
 
@@ -569,6 +572,7 @@ async function submitAuth(e){
     if(result.error){document.getElementById('authMsg').innerHTML='<div class="notice err">'+esc(result.error.message)+'</div>';return}
     state.user=result.data.user;state.role='client';
   }
+  saveSession();
   closeAuth();render();
 }
 async function loginWithGoogle(){
@@ -1011,6 +1015,12 @@ function postRender(){
 }
 
 function init(){
+  var saved=safeRead('ac_current_user',null);
+if(saved && !state.user){
+  state.user={id:saved.id,email:saved.email,full_name:saved.full_name,phone:saved.phone};
+  state.profile={full_name:saved.full_name,phone:saved.phone};
+  state.role=saved.role||'client';
+}
   render();
 }
 
