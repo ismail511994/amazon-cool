@@ -1,4 +1,4 @@
-const CACHE_NAME='amazon-cool-v1';
+const CACHE_NAME='amazon-cool-v2';
 const ASSETS=[
   '/amazon-cool/',
   '/amazon-cool/index.html',
