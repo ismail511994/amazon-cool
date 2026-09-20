@@ -339,13 +339,20 @@ ads:()=>{
 },
 
 cart:()=>{
-  var total=state.cart.reduce(function(s,x){return s+x.price*x.qty},0);
-  if(!state.cart.length)return '<h2>السلة</h2><div class="notice">السلة فارغة.</div>';
-  return '<h2>السلة</h2><div class="card">'+
-    state.cart.map(function(x,i){return '<div style="display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--border);padding:10px 0"><div><b>'+esc(x.name)+'</b><div class="muted">'+money(x.price)+' × '+x.qty+'</div></div><button class="btn red" onclick="removeCart('+i+')">حذف</button></div>'}).join('')+
-    '<h3>الإجمالي: <span class="price">'+money(total)+'</span></h3>'+
-    '<div class="actions"><button class="btn primary" onclick="checkoutCart()">تأكيد الطلب</button><button class="btn" onclick="state.cart=[];saveCart();render()">تفريغ السلة</button></div>'+
-  '</div>';
+var total=state.cart.reduce(function(s,x){return s+x.price*x.qty},0);
+if(!state.cart.length)return '<h2>السلة</h2><div class="notice">السلة فارغة.</div>';
+var coupon=state.appliedCoupon?coupons.find(function(c){return c.code===state.appliedCoupon}):null;
+var discount=coupon?Math.round(total*coupon.discount/100):0;
+var final=total-discount;
+return '<h2>السلة</h2><div class="card">'+
+state.cart.map(function(x,i){return '<div style="display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--border);padding:10px 0"><div><b>'+esc(x.name)+'</b><div class="muted">'+money(x.price)+' × '+x.qty+'</div></div><button class="btn red" onclick="removeCart('+i+')">حذف</button></div>'}).join('')+
+'<div class="field" style="margin-top:12px"><label>كود الخصم</label><div style="display:flex;gap:8px"><input id="couponInput" placeholder="SAVE10" value="'+(state.appliedCoupon||'')+'" style="flex:1"><button class="btn primary" onclick="applyCoupon()" style="padding:10px 16px">تطبيق</button></div></div>'+
+(coupon?'<div class="notice ok">✓ كود '+coupon.code+' — خصم '+coupon.discount+'%</div>':'')+
+'<h3>الإجمالي: <span class="price">'+money(total)+'</span></h3>'+
+(coupon?'<h3>الخصم: <span style="color:#f87171">-'+money(discount)+'</span></h3>':'')+
+(coupon?'<h3 style="font-size:20px">المطلوب: <span style="color:#10b981;font-weight:900">'+money(final)+'</span></h3>':'')+
+'<div class="actions"><button class="btn primary" onclick="checkoutCart()">تأكيد الطلب</button><button class="btn" onclick="state.cart=[];state.appliedCoupon=null;saveCart();render()">تفريغ السلة</button></div>'+
+'</div>';
 },
 
 services:()=>`<h2>طلب خدمة</h2>
@@ -1001,6 +1008,18 @@ function setOrderStatus(i,status){
   render();
 }
 
+  function applyCoupon(){
+  var input=document.getElementById('couponInput');
+  if(!input)return;
+  var code=input.value.trim().toUpperCase();
+  if(!code){state.appliedCoupon=null;render();return}
+  var found=coupons.find(function(c){return c.code===code&&c.active});
+  if(!found){alert('كود غير صحيح');return}
+  var total=state.cart.reduce(function(s,x){return s+x.price*x.qty},0);
+  if(total<found.minOrder){alert('الحد الأدنى للكود: '+(found.minOrder/100)+' جنيه');return}
+  state.appliedCoupon=code;
+  render();
+  }
 function postRender(){
   if(state.page==='store')filterProducts();
   if(state.page==='diagnosis')renderFaults();
