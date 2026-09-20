@@ -754,7 +754,8 @@ function loadOrders(){
 function orderCard(o){
   try{
     var d=o.details||{};
-    var t=(o.service_type==='store')?'🛒 طلب متجر':('🔧 خدمة: '+(o.service_type||''));
+    var map={installation:'تركيب تكييف',uninstall:'فك تكييف',maintenance:'صيانة عامة',periodic:'صيانة دورية',diagnosis:'تشخيص عطل',piping:'تأسيس مواسير',cleaning:'تنظيف وغسيل',gas:'شحن غاز',store:'طلب متجر'};
+var t=(o.service_type==='store')?'🛒 '+map[o.service_type]||'طلب متجر':('🔧 '+(map[o.service_type]||o.service_type||''));
     var dt=new Date(o.created_at).toLocaleString('ar-EG');
     var amt=Number(o.total_amount||0).toLocaleString('ar-EG')+' ج.م';
     var s='<div style="border-bottom:1px solid #26334d;padding:12px 0">';
