@@ -891,7 +891,7 @@ var typeAr=types[o.service_type]||o.service_type||'';
     if(d.address)t+='📍 '+d.address+'\n';
     if(d.bookingDate)t+='📅 '+d.bookingDate+'\n';
     if(d.emergency)t+='🚨 طوارئ\n';
-    fetch('https://api.callmebot.com/call.php?phone='+CALLMEBOT_PHONE+'&text='+encodeURIComponent(t)+'&apikey='+CALLMEBOT_KEY).catch(function(){});
+    fetch('https://api.callmebot.com/whatsapp.php?phone='+CALLMEBOT_PHONE+'&text='+encodeURIComponent(t)+'&apikey='+CALLMEBOT_KEY).catch(function(){});
   }catch(e){}
     }
   
