@@ -147,12 +147,12 @@ function safeWrite(key,val){
 
 /* ========== DEFAULT DATA ========== */
 const DEFAULT_PRODUCTS=[
-  {id:'p1',name:'Carrier Optimax Inverter 1.5 HP',price:28500,brand:'Carrier',stock:5,discount:0,emoji:'❄️',description:'جهاز تكييف إنفرتر موفر للطاقة'},
-  {id:'p2',name:'Sharp Inverter Plasma 2.25 HP',price:37200,brand:'Sharp',stock:4,discount:0,emoji:'💨',description:'تكييف إنفرتر بتقنية Plasma'},
-  {id:'p3',name:'LG Dual Inverter 1.5 HP',price:31000,brand:'LG',stock:4,discount:0,emoji:'❄️',description:'تكييف LG Dual Inverter'},
-  {id:'p4',name:'Gree Polar Split 3 HP',price:42000,brand:'Gree',stock:3,discount:0,emoji:'🌬️',description:'تكييف سبليت 3 حصان'},
-  {id:'p5',name:'Fresh Turbo Black 1.5 HP',price:21500,brand:'Fresh',stock:6,discount:0,emoji:'🖤',description:'تكييف Fresh Turbo'},
-  {id:'p6',name:'Carrier Concealed 3 HP',price:54000,brand:'Carrier',stock:2,discount:0,emoji:'🏢',description:'تكييف كونسيلد للسقف'}
+{id:'p1',name:'Carrier Optimax Inverter 1.5 HP',price:28500,brand:'Carrier',stock:5,discount:0,emoji:'❄️',image:'https://placehold.co/400x300/0284c7/ffffff?text=Carrier',description:'جهاز تكييف إنفرتر موفر للطاقة'},
+{id:'p2',name:'Sharp Inverter Plasma 2.25 HP',price:37200,brand:'Sharp',stock:4,discount:0,emoji:'💨',image:'https://placehold.co/400x300/10b981/ffffff?text=Sharp',description:'تكييف إنفرتر بتقنية Plasma'},
+{id:'p3',name:'LG Dual Inverter 1.5 HP',price:31000,brand:'LG',stock:4,discount:0,emoji:'❄️',image:'https://placehold.co/400x300/a855f7/ffffff?text=LG',description:'تكييف LG Dual Inverter'},
+{id:'p4',name:'Gree Polar Split 3 HP',price:42000,brand:'Gree',stock:3,discount:0,emoji:'🌬️',image:'https://placehold.co/400x300/f59e0b/111111?text=Gree',description:'تكييف سبليت 3 حصان'},
+{id:'p5',name:'Fresh Turbo Black 1.5 HP',price:21500,brand:'Fresh',stock:6,discount:0,emoji:'🖤',image:'https://placehold.co/400x300/3b82f6/ffffff?text=Fresh',description:'تكييف Fresh Turbo'},
+{id:'p6',name:'Carrier Concealed 3 HP',price:54000,brand:'Carrier',stock:2,discount:0,emoji:'🏢',image:'https://placehold.co/400x300/ef4444/ffffff?text=Carrier',description:'تكييف كونسيلد للسقف'}
 ];
 
 const DEFAULT_ADS=[
@@ -630,7 +630,7 @@ function filterProducts(){
   var arr=products.filter(function(p){return (p.name+' '+(p.brand||'')).toLowerCase().includes(q)});
   document.getElementById('productGrid').innerHTML=arr.map(function(p){
     var final=p.discount>0?Math.round(p.price*(100-p.discount)/100):p.price;
-    return '<div class="card"><span class="pill">'+esc(p.brand||'')+'</span>'+
+    return '<div class="card"><div style="aspect-ratio:4/3;background:#0d0f14;overflow:hidden"><img src="'+(p.image||'')+'" alt="'+esc(p.name)+'" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display=\'none\'"></div><span class="pill">'+esc(p.brand||'')+'</span>'+
       '<h3>'+(p.emoji||'📦')+' '+esc(p.name)+'</h3>'+
       '<div class="price">'+money(final)+(p.discount>0?' <span style="font-size:13px;color:#f87171;text-decoration:line-through">'+money(p.price)+'</span>':'')+'</div>'+
       '<p class="muted">متاح: '+p.stock+'</p>'+
