@@ -274,7 +274,7 @@ home:()=>`
   <div style="font-size:48px">❄️</div>
   <div style="display:inline-block;background:rgba(239,68,68,.25);border:1px solid rgba(239,68,68,.5);color:#fecaca;padding:4px 12px;border-radius:999px;font-size:11px;font-weight:800;margin-top:8px">🔴 خدمة طوارئ 24/7</div>
   <h2 style="font-size:22px;font-weight:900;margin:12px 0 8px 0;color:#fff">تكييفك عطلان؟ <span style="color:#fbbf24">إحنا في خدمتك</span></h2>
-  <p style="color:#cffafe;font-size:13px;margin:0 0 14px 0">فني خلال ساعات في القاهرة والجيزة</p>
+  <p style="color:#cffafe;font-size:13px;margin:0 0 14px فني خلال ساعات في الاسكندرية والبحيرة</p>
   <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
     <a href="https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent('مرحباً، تكييفي عطلان ومحتاج فني')}" target="_blank" style="background:#25D366;color:#fff;padding:11px 20px;border-radius:10px;font-weight:800;font-size:14px;text-decoration:none">💬 واتساب</a>
     <button onclick="goEmergency()" style="background:rgba(239,68,68,.3);border:1.5px solid #ef4444;color:#fff;padding:11px 20px;border-radius:10px;font-weight:800;font-size:14px;cursor:pointer">🚨 طوارئ</button>
@@ -371,6 +371,7 @@ ${state.emergency?`<div class="card" style="background:linear-gradient(135deg,#7
 <div class="card">
   <h3>📍 العنوان</h3>
   <div class="field"><label>المدينة</label><input id="svcCity" placeholder="القاهرة"></div>
+  <div class="field"><label>الاسم الثلاثي *</label><input id="svcName" placeholder="أحمد محمد علي"></div>
   <div class="field"><label>العنوان بالتفصيل</label><textarea id="svcAddress" placeholder="الشارع، رقم العمارة، الدور"></textarea></div>
   <div class="field"><label>رقم الموبايل</label><input id="svcPhone" placeholder="01xxxxxxxxx"></div>
 </div>
@@ -707,6 +708,7 @@ async function createServiceOrder(){
     client_id:state.user.id,
     service_type:document.getElementById('svcType').value,
     details:{
+      name:document.getElementById('svcName').value.trim(),
       brand:document.getElementById('svcBrand').value.trim(),
       model:document.getElementById('svcModel').value.trim(),
       hp:document.getElementById('svcHP').value,
@@ -886,6 +888,7 @@ function notifyWhatsApp(o){
 var typeAr=types[o.service_type]||o.service_type||'';
     var t='🔔 طلب جديد\n';
     t+='النوع: '+typeAr+'\n';
+    if(d.name)t+='الاسم: '+d.name+'\n';
     if(d.brand||d.model)t+='الجهاز: '+(d.brand||'')+' '+(d.model||'')+'\n';
     if(d.problem)t+='المشكلة: '+d.problem+'\n';
     if(d.phone)t+='📞 '+d.phone+'\n';
