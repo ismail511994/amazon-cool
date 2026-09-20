@@ -877,21 +877,7 @@ function calcCapacity(){
   result.innerHTML='<div class="notice ok">'+source+'<br>معامل: <b>'+factor+'</b><br>الحمل: <b>'+btu.toLocaleString('ar-EG')+' BTU/h</b><br>الاختيار: <b style="color:#67e8f9;font-size:18px">'+hp+'</b></div>';
 }
 
-  async function createServiceOrder(){
-  if(!state.user){openAuth();return}
-  var order={id:'o'+Date.now(),client_id:state.user.id,service_type:document.getElementById('svcType').value,details:{brand:document.getElementById('svcBrand').value.trim(),model:document.getElementById('svcModel').value.trim(),hp:document.getElementById('svcHP').value,units:document.getElementById('svcUnits').value,urgency:document.getElementById('svcUrgency').value,city:document.getElementById('svcCity').value.trim(),address:document.getElementById('svcAddress').value.trim(),phone:document.getElementById('svcPhone').value.trim(),problem:document.getElementById('svcProblem').value.trim(),errorCode:document.getElementById('svcErrorCode').value.trim(),notes:document.getElementById('svcNotes').value.trim(),bookingDate:document.getElementById('bookingDate').value,bookingTime:document.getElementById('bookingTime').value,bookingNotes:document.getElementById('bookingNotes').value.trim()},total_amount:0,status:'pending',created_at:new Date().toISOString()};
-  if(!order.details.phone){alert('اكتب رقم الموبايل');return}
-  if(!order.details.address){alert('اكتب العنوان');return}
-  if(!order.details.bookingDate){alert('اختار يوم الزيارة');return}
-  if(state.emergency){var agreed=document.getElementById('emergencyTerms');if(!agreed||!agreed.checked){alert('⚠️ يجب الموافقة على شروط الطوارئ');return}order.details.emergency=true}
-  var orders=safeRead('ac_orders',[]);
-  orders.unshift(order);
-  safeWrite('ac_orders',orders);
-  notifyWhatsApp(order);
-  alert('✅ تم إرسال الطلب');
-  state.emergency=false;
-  setPage('orders');
-}
+  
   
 function notifyWhatsApp(o){
   try{
