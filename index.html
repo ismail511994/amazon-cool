@@ -124,6 +124,7 @@ const CONFIG={
 };
   const CALLMEBOT_PHONE = '201275998196';
   const CALLMEBOT_KEY = '4104053';
+  const DEFAULT_COUPONS=[
 const isConfigured=CONFIG.SUPABASE_URL.startsWith('https://')&&!CONFIG.SUPABASE_URL.includes('YOUR_');
 const DEMO=CONFIG.DEMO_MODE||!isConfigured;
 const db=(!DEMO&&window.supabase)?window.supabase.createClient(CONFIG.SUPABASE_URL,CONFIG.SUPABASE_ANON_KEY):null;
@@ -144,6 +145,13 @@ function safeWrite(key,val){
   try{localStorage.setItem(key,JSON.stringify(val))}
   catch(e){console.warn('Safe write failed:',key,e)}
 }
+  const DEFAULT_COUPONS=[
+{code:'SAVE10',discount:10,active:true,minOrder:0},
+{code:'SAVE20',discount:20,active:true,minOrder:50000},
+{code:'WELCOME',discount:5,active:true,minOrder:0}
+];
+var coupons=safeRead('ac_coupons',null)||DEFAULT_COUPONS.map(function(c){return Object.assign({},c)});
+function saveCoupons(){safeWrite('ac_coupons',coupons)}
 
 /* ========== DEFAULT DATA ========== */
 const DEFAULT_PRODUCTS=[
