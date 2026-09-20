@@ -881,8 +881,10 @@ function calcCapacity(){
 function notifyWhatsApp(o){
   try{
     var d=o.details||{};
+    var types={installation:'تركيب تكييف',uninstall:'فك تكييف',maintenance:'صيانة عامة',periodic:'صيانة دورية',diagnosis:'تشخيص عطل',piping:'تأسيس مواسير',cleaning:'تنظيف وغسيل',gas:'شحن غاز',store:'🛒 طلب متجر'};
+var typeAr=types[o.service_type]||o.service_type||'';
     var t='🔔 طلب جديد\n';
-    t+='النوع: '+(o.service_type||'')+'\n';
+    t+='النوع: '+typeAr+'\n';
     if(d.brand||d.model)t+='الجهاز: '+(d.brand||'')+' '+(d.model||'')+'\n';
     if(d.problem)t+='المشكلة: '+d.problem+'\n';
     if(d.phone)t+='📞 '+d.phone+'\n';
