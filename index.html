@@ -122,6 +122,8 @@ const CONFIG={
   GEMINI_API_KEY:'AQ.Ab8RN6KPDvDz44jZdBabFDqqJZYo-pkGNsKdkrT2cy7MZb2acg',
   CURRENCY:'ج.م'
 };
+  const CALLMEBOT_PHONE = '201275998196';
+  const CALLMEBOT_KEY = '4104053';
 const isConfigured=CONFIG.SUPABASE_URL.startsWith('https://')&&!CONFIG.SUPABASE_URL.includes('YOUR_');
 const DEMO=CONFIG.DEMO_MODE||!isConfigured;
 const db=(!DEMO&&window.supabase)?window.supabase.createClient(CONFIG.SUPABASE_URL,CONFIG.SUPABASE_ANON_KEY):null;
