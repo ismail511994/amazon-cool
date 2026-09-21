@@ -495,6 +495,7 @@ calculators:()=>`<h2>حاسبات HVAC</h2>
 </div>`,
 
 orders:()=>`<h2>طلباتي</h2><div id="ordersList" class="card">جارٍ التحميل...</div>`,
+  tech_join:()=>"<h2>🔧 انضم لفريق الفنيين</h2><div class='card'><p style='text-align:center;padding:20px'>الصفحة تحت الإنشاء</p></div>",
 admin:()=>(!state.user || (state.role!=='admin' && ADMIN_EMAILS.indexOf(state.user.email)===-1))?'<h2>لوحة الإدارة</h2><div class="notice err" style="padding:20px;text-align:center;font-size:16px">🔒 غير مصرح<br><br>هذه الصفحة للمشرفين فقط<br><br><button class="btn" onclick="setPage(\'home\')">العودة للرئيسية</button></div>':`<h2>لوحة الإدارة</h2>
 <div class="card">
   <h3>➕ إضافة منتج</h3>
