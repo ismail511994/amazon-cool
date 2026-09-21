@@ -1059,6 +1059,7 @@ if(saved && !state.user){
   render();
 }
 
+  if('serviceWorker' in navigator){navigator.serviceWorker.addEventListener('controllerchange',function(){window.location.reload()})}
 init();
 </script>
   <script>
