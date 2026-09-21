@@ -347,6 +347,8 @@ var f=total-d;
   return '<h2>السلة</h2><div class="card">'+
     state.cart.map(function(x,i){return '<div style="display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--border);padding:10px 0"><div><b>'+esc(x.name)+'</b><div class="muted">'+money(x.price)+' × '+x.qty+'</div></div><button class="btn red" onclick="removeCart('+i+')">حذف</button></div>'}).join('')+
     '<h3>الإجمالي: <span class="price">'+money(total)+'</span></h3>'+
+(c?'<h3>الخصم ('+c.discount+'%): <span style="color:#f87171">-'+money(d)+'</span></h3>':'')+
+(c?'<h3 style="font-size:22px">المطلوب: <span style="color:#10b981;font-weight:900">'+money(f)+'</span></h3>':'')+
     (state.appliedCoupon?'<div class="notice ok">✓ كود: '+state.appliedCoupon+'</div>':'')+
     '<div class="actions"><button class="btn primary" onclick="promptCoupon()">🎟️ كود</button><button class="btn primary" onclick="checkoutCart()">تأكيد الطلب</button></button><button class="btn" onclick="state.cart=[];saveCart();render()">تفريغ السلة</button></div>'+
   '</div>';
