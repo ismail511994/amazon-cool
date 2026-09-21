@@ -340,6 +340,9 @@ ads:()=>{
 
 cart:()=>{
   var total=state.cart.reduce(function(s,x){return s+x.price*x.qty},0);
+  var c=state.appliedCoupon?coupons.find(function(x){return x.code===state.appliedCoupon}):null;
+var d=c?Math.round(total*c.discount/100):0;
+var f=total-d;
   if(!state.cart.length)return '<h2>السلة</h2><div class="notice">السلة فارغة.</div>';
   return '<h2>السلة</h2><div class="card">'+
     state.cart.map(function(x,i){return '<div style="display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--border);padding:10px 0"><div><b>'+esc(x.name)+'</b><div class="muted">'+money(x.price)+' × '+x.qty+'</div></div><button class="btn red" onclick="removeCart('+i+')">حذف</button></div>'}).join('')+
