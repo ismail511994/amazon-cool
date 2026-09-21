@@ -527,6 +527,19 @@ admin:()=>(!state.user || (state.role!=='admin' && ADMIN_EMAILS.indexOf(state.us
 <div class="card">
   <h3>📋 الإعلانات الحالية</h3>
   <div id="adminAds">${renderAdminAds()}</div>
+  <div class="card">
+  <h3>🎟️ إضافة كوبون</h3>
+  <div class="grid" style="grid-template-columns:1fr 1fr">
+    <div class="field"><label>كود الخصم</label><input id="cpCode" placeholder="SAVE30"></div>
+    <div class="field"><label>الخصم %</label><input id="cpDiscount" type="number" min="1" max="90" value="10"></div>
+    <div class="field"><label>الحد الأدنى (ج.م)</label><input id="cpMinOrder" type="number" min="0" value="0"></div>
+  </div>
+  <button class="btn green" onclick="addCoupon()">➕ إضافة كوبون</button>
+</div>
+<div class="card">
+  <h3>🎟️ الكوبونات الحالية</h3>
+  <div id="adminCoupons">${renderAdminCoupons()}</div>
+</div>
 </div><div class="card">
   <h3>📋 الطلبات</h3>
   <div id="adminOrders">جارٍ التحميل...</div>
