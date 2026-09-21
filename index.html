@@ -1020,6 +1020,7 @@ async function loadAdmin(){
   }).join('');
 }
 
+  function loadTechApps(){var el=document.getElementById('techAppsList');if(!el)return;var apps=safeRead('ac_tech_apps',[]);if(!apps.length){el.innerHTML='<div class="muted">لا يوجد متقدمين بعد</div>';return}el.innerHTML=apps.map(function(a,i){var st=a.status||'pending';var col=st==='approved'?'#10b981':st==='rejected'?'#ef4444':'#f59e0b';return '<div style="border-bottom:1px solid var(--border);padding:10px 0"><div style="display:flex;justify-content:space-between"><b>'+esc(a.name)+'</b><span class="pill" style="background:'+col+'">'+a.percent+'%</span></div><div class="muted" style="font-size:12px">📞 '+esc(a.phone)+'</div><div class="muted" style="font-size:12px">📍 '+esc(a.city)+'</div><div class="muted" style="font-size:12px">💼 '+esc(a.exp||'')+'</div><div class="actions" style="margin-top:6px"><button class="btn green" onclick="setTechStatus('+i+',\'approved\')">✅ قبول</button><button class="btn red" onclick="setTechStatus('+i+',\'rejected\')">❌ رفض</button></div></div>'}).join('')}
 function setOrderStatus(i,status){
   var orders=safeRead('ac_orders',[]);
   if(!orders[i])return;
