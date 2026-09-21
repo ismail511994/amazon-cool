@@ -1007,6 +1007,8 @@ function setOrderStatus(i,status){
   safeWrite('ac_orders',orders);
   render();
 }
+  function getUsedCoupons(){if(!state.user)return[];return safeRead('ac_used_'+state.user.id,[])}
+function markCouponUsed(code){if(!state.user||!code)return;var u=getUsedCoupons();if(u.indexOf(code)===-1){u.push(code);safeWrite('ac_used_'+state.user.id,u)}}
   function promptCoupon(){
   var code=prompt('اكتب كود الخصم:');
   if(!code){state.appliedCoupon=null;render();return}
