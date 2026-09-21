@@ -342,7 +342,7 @@ cart:()=>{
   var total=state.cart.reduce(function(s,x){return s+x.price*x.qty},0);
   var c=state.appliedCoupon?coupons.find(function(x){return x.code===state.appliedCoupon}):null;
 var d=c?Math.round(total*c.discount/100):0;
-  if(c && c.maxDiscount && d>c.maxDiscount) d=c.maxDiscount;
+  if(c && c.maxDiscount && d*100>c.maxDiscount) d=Math.round(c.maxDiscount/100);
 var f=total-d;
   if(!state.cart.length)return '<h2>السلة</h2><div class="notice">السلة فارغة.</div>';
   return '<h2>السلة</h2><div class="card">'+
