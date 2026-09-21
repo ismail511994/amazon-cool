@@ -254,7 +254,7 @@ function render(){
   
 /* ========== PAGES ========== */
   var techQuiz=[{q:"غاز التبريد الأكثر استخدامًا في التكييفات الحديثة؟",o:["R22","R410A","R12","R502"],a:1},{q:"تكييف شغال بس مش بيبرد — أشهر سبب؟",o:["نقص غاز","عطل ريموت","مشكلة كهرباء","الفلاتر نظيفة"],a:0},{q:"كود E1 في Carrier معناه؟",o:["عطل ضاغط","حساس حرارة الغرفة","نقص غاز","عطل مروحة"],a:1},{q:"أفضل مكان للوحدة الخارجية؟",o:["شمس مباشرة","ظل مع تهوية","غرفة مغلقة","سطح بدون تهوية"],a:1},{q:"أنسب قدرة لغرفة 20م²؟",o:["1 حصان","1.5 حصان","2.25 حصان","3 حصان"],a:1}];
-  function startQuiz(){var n=document.getElementById('tjName');var p=document.getElementById('tjPhone');var c=document.getElementById('tjCity');if(!n||!n.value.trim()){alert('اكتب الاسم');return}if(!p||!p.value.trim()){alert('اكتب الموبايل');return}if(!c||!c.value.trim()){alert('اكتب المدينة');return}toast('✅ البيانات صحيحة — جاهز للاختبار');}
+  function startQuiz(){var n=document.getElementById('tjName');var p=document.getElementById('tjPhone');var c=document.getElementById('tjCity');if(!n||!n.value.trim()){alert('اكتب الاسم');return}if(!p||!p.value.trim()){alert('اكتب الموبايل');return}if(!c||!c.value.trim()){alert('اكتب المدينة');return}showQuiz();}
   function showQuiz(){var h='<h2>📝 الاختبار الإلكتروني</h2>';for(var i=0;i<techQuiz.length;i++){h+='<div class="card"><b>'+(i+1)+'. '+techQuiz[i].q+'</b><br>';for(var j=0;j<techQuiz[i].o.length;j++){h+='<label style="display:block;padding:8px"><input type="radio" name="q'+i+'" value="'+j+'"> '+techQuiz[i].o[j]+'</label>';}h+='</div>';}h+='<button class="btn primary" style="width:100%;padding:14px" onclick="submitQuiz()">إرسال الاختبار</button>';document.getElementById('app').innerHTML=h;}
 const pages={
 home:()=>`
