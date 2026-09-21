@@ -1014,7 +1014,7 @@ function setOrderStatus(i,status){
   var found=coupons.find(function(c){return c.code===code&&c.active});
   if(!found){alert('كود غير صحيح');return}
   var total=state.cart.reduce(function(s,x){return s+x.price*x.qty},0);
-  if(total<found.minOrder){alert('الحد الأدنى: '+(found.minOrder/100)+' ج.م');return}
+  if(total*100<found.minOrder){alert('الحد الأدنى: '+(found.minOrder/100)+' ج.م');return}
   state.appliedCoupon=code;
   alert('تم تطبيق الخصم: '+found.discount+'%');
   render();
