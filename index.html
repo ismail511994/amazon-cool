@@ -730,6 +730,7 @@ async function checkoutCart(){
   var order={id:'o'+Date.now(),client_id:state.user.id,service_type:'store',details:{items:state.cart,payment_method:'cod'},total_amount:total,status:'pending',created_at:new Date().toISOString()};
   var orders=safeRead('ac_orders',[]);
   orders.unshift(order);safeWrite('ac_orders',orders);
+  if(state.appliedCoupon)markCouponUsed(state.appliedCoupon);
   state.cart=[];saveCart();alert('✅ تم تسجيل الطلب');setPage('orders');
 }
 
@@ -1015,6 +1016,7 @@ function markCouponUsed(code){if(!state.user||!code)return;var u=getUsedCoupons(
   code=code.trim().toUpperCase();
   var found=coupons.find(function(c){return c.code===code&&c.active});
   if(!found){alert('كود غير صحيح');return}
+    if(getUsedCoupons().indexOf(code)!==-1){alert('هذا الكود مستخدم بالفعل');return}
   var total=state.cart.reduce(function(s,x){return s+x.price*x.qty},0);
   if(total*100<found.minOrder){alert('الحد الأدنى: '+(found.minOrder/100)+' ج.م');return}
   state.appliedCoupon=code;
