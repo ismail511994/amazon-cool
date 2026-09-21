@@ -301,7 +301,7 @@ home:()=>`
 
   <p class="muted" style="margin:0;font-size:13px">اختار القسم</p>
 </div>
-
+<div class="card" style="cursor:pointer;text-align:center;padding:18px;background:linear-gradient(135deg,#0c4a6e,#155e75);border:2px solid #06b6d4;margin:0 0 12px 0" onclick="setPage('tech_join')"><div style="font-size:34px">👷‍♂️</div><div style="font-weight:800;margin-top:8px;font-size:14px">انضم لفريق الفنيين</div><div class="muted" style="font-size:11px;margin-top:3px">سجل بياناتك واجتز الاختبار</div></div>
 <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px">
   ${[['store','🛒','المتجر','أجهزة تكييف'],['services','🔧','اطلب فني','تركيب وصيانة'],['diagnosis','🤖','شخّص العطل','بالذكاء الاصطناعي'],['ads','📢','الإعلانات','عروض وخصومات'],['calculators','🧮','الحاسبات','BTU ومواسير'],['orders','📋','طلباتي','تابع حالاتك']].map(x=>`
     <div class="card" style="cursor:pointer;text-align:center;padding:18px 10px;margin:0" onclick="setPage('${x[0]}')">
