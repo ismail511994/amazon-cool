@@ -342,6 +342,7 @@ cart:()=>{
   var total=state.cart.reduce(function(s,x){return s+x.price*x.qty},0);
   var c=state.appliedCoupon?coupons.find(function(x){return x.code===state.appliedCoupon}):null;
 var d=c?Math.round(total*c.discount/100):0;
+  if(c && c.maxDiscount && d>c.maxDiscount) d=c.maxDiscount;
 var f=total-d;
   if(!state.cart.length)return '<h2>السلة</h2><div class="notice">السلة فارغة.</div>';
   return '<h2>السلة</h2><div class="card">'+
@@ -1041,7 +1042,7 @@ function postRender(){
 }
 
   function renderAdminCoupons(){if(!coupons.length)return '<div class="muted">لا توجد كوبونات</div>';return coupons.map(function(c,i){return '<div style="display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--border);padding:10px 0;align-items:center"><div style="flex:1"><b>'+c.code+'</b><div class="muted">خصم '+c.discount+'% — حد أدنى: '+(c.minOrder/100)+' ج.م</div><div class="muted">'+(c.active?'✅ نشط':'⏸️ متوقف')+'</div></div><div style="display:flex;gap:6px"><button class="btn" onclick="toggleCoupon('+i+')">'+(c.active?'⏸️':'▶️')+'</button><button class="btn red" onclick="deleteCoupon('+i+')">🗑️</button></div></div>'}).join('')}
-function addCoupon(){var code=document.getElementById('cpCode').value.trim().toUpperCase();var discount=parseFloat(document.getElementById('cpDiscount').value)||0;var minOrder=parseFloat(document.getElementById('cpMinOrder').value)||0;if(!code||discount<=0||discount>90){alert('اكتب كود وخصم صحيح (1-90)');return}if(coupons.some(function(c){return c.code===code})){alert('الكود موجود بالفعل');return}coupons.push({code:code,discount:discount,minOrder:minOrder*100,active:true});saveCoupons();alert('✅ تم إضافة الكوبون');render()}
+function addCoupon(){var code=document.getElementById('cpCode').value.trim().toUpperCase();var discount=parseFloat(document.getElementById('cpDiscount').value)||0;var minOrder=parseFloat(document.getElementById('cpMinOrder').value)||0;var maxDisc=parseFloat(document.getElementById('cpMaxDiscount').value)||0;if(!code||discount<=0||discount>90){alert('اكتب كود وخصم صحيح (1-90)');return}if(coupons.some(function(c){return c.code===code})){alert('الكود موجود بالفعل');return}coupons.push({code:code,discount:discount,minOrder:minOrder*100,maxDiscount:maxDisc*100,active:true});saveCoupons();alert('✅ تم إضافة الكوبون');render()}
 function toggleCoupon(i){coupons[i].active=!coupons[i].active;saveCoupons();render()}
 function deleteCoupon(i){if(!confirm('حذف الكوبون "'+coupons[i].code+'"؟'))return;coupons.splice(i,1);saveCoupons();render()}
 function init(){
