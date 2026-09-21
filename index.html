@@ -497,7 +497,7 @@ calculators:()=>`<h2>حاسبات HVAC</h2>
 </div>`,
 
 orders:()=>`<h2>طلباتي</h2><div id="ordersList" class="card">جارٍ التحميل...</div>`,
-  tech_join:()=>'<h2>🔧 انضم لفريق الفنيين</h2><div class="card"><div class="field"><label>الاسم الثلاثي *</label><input id="tjName"></div><div class="field"><label>رقم الموبايل *</label><input id="tjPhone"></div><div class="field"><label>المدينة *</label><input id="tjCity"></div><div class="field"><label>سنوات الخبرة</label><select id="tjExp"><option>أقل من سنة</option><option>1-3 سنوات</option><option>3-5 سنوات</option><option>5-10 سنوات</option><option>أكثر من 10 سنوات</option></select></div><button class="btn primary" style="width:100%;padding:14px" onclick="toast(\'الخطوة الجاية: الاختبار\')">التالي ➡️</button></div>',
+  tech_join:()=>'<h2>🔧 انضم لفريق الفنيين</h2><div class="card"><div class="field"><label>الاسم الثلاثي *</label><input id="tjName"></div><div class="field"><label>رقم الموبايل *</label><input id="tjPhone"></div><div class="field"><label>المدينة *</label><input id="tjCity"></div><div class="field"><label>سنوات الخبرة</label><select id="tjExp"><option>أقل من سنة</option><option>1-3 سنوات</option><option>3-5 سنوات</option><option>5-10 سنوات</option><option>أكثر من 10 سنوات</option></select></div><button class="btn primary" style="width:100%;padding:14px" onclick="startQuiz()">التالي ➡️</button></div>',
 admin:()=>(!state.user || (state.role!=='admin' && ADMIN_EMAILS.indexOf(state.user.email)===-1))?'<h2>لوحة الإدارة</h2><div class="notice err" style="padding:20px;text-align:center;font-size:16px">🔒 غير مصرح<br><br>هذه الصفحة للمشرفين فقط<br><br><button class="btn" onclick="setPage(\'home\')">العودة للرئيسية</button></div>':`<h2>لوحة الإدارة</h2>
 <div class="card">
   <h3>➕ إضافة منتج</h3>
