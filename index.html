@@ -732,6 +732,7 @@ async function checkoutCart(){
   orders.unshift(order);safeWrite('ac_orders',orders);
   if(state.appliedCoupon)markCouponUsed(state.appliedCoupon);
   state.cart=[];saveCart();alert('✅ تم تسجيل الطلب');setPage('orders');
+  setTimeout(function(){location.reload()},1500);
 }
 
 /* ========== SERVICES / ORDERS ========== */
