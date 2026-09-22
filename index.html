@@ -254,7 +254,7 @@ function render(){
   
 /* ========== PAGES ========== */
   var techQuiz=[{q:"غاز التبريد الأكثر استخدامًا في التكييفات الحديثة؟",o:["R22","R410A","R12","R502"],a:1},{q:"تكييف شغال بس مش بيبرد — أشهر سبب؟",o:["نقص غاز","عطل ريموت","مشكلة كهرباء","الفلاتر نظيفة"],a:0},{q:"كود E1 في Carrier معناه؟",o:["عطل ضاغط","حساس حرارة الغرفة","نقص غاز","عطل مروحة"],a:1},{q:"أفضل مكان للوحدة الخارجية؟",o:["شمس مباشرة","ظل مع تهوية","غرفة مغلقة","سطح بدون تهوية"],a:1},{q:"أنسب قدرة لغرفة 20م²؟",o:["1 حصان","1.5 حصان","2.25 حصان","3 حصان"],a:1}];
-  function techLogin(){var p=document.getElementById('techPhone');if(!p||!p.value.trim()){alert('اكتب رقم الموبايل');return}var apps=safeRead('ac_tech_apps',[]);var found=apps.find(function(a){return a.phone===p.value.trim()&&a.status==='approved'});if(!found){alert('❌ رقمك غير مسجل أو لسه مش معتمد');return}safeWrite('ac_current_tech',{phone:found.phone,name:found.name});toast('✅ أهلاً '+found.name);}
+  function techLogin(){var p=document.getElementById('techPhone');if(!p||!p.value.trim()){alert('اكتب رقم الموبايل');return}var apps=safeRead('ac_tech_apps',[]);var found=apps.find(function(a){return a.phone===p.value.trim()&&a.status==='approved'});if(!found){alert('❌ رقمك غير مسجل أو لسه مش معتمد');return}safeWrite('ac_current_tech',{phone:found.phone,name:found.name});setPage('tech_panel')}
   function startQuiz(){var n=document.getElementById('tjName');var p=document.getElementById('tjPhone');var c=document.getElementById('tjCity');if(!n||!n.value.trim()){alert('اكتب الاسم');return}if(!p||!p.value.trim()){alert('اكتب الموبايل');return}if(!c||!c.value.trim()){alert('اكتب المدينة');return}
                        
                        window.tempTechData={name:n.value.trim(),phone:p.value.trim(),city:c.value.trim(),exp:document.getElementById('tjExp').value};showQuiz();}
@@ -501,6 +501,7 @@ calculators:()=>`<h2>حاسبات HVAC</h2>
   <button class="btn primary" onclick="calcCapacity()">احسب</button>
   <div id="capResult"></div>
 </div>`,
+  tech_panel:()=>'<h2>🔧 لوحة الفني</h2><div class="card"><p style="text-align:center;padding:20px">أهلاً بك في لوحتك</p></div>',
 tech_dashboard:()=>'<h2>🔧 لوحة الفني</h2><div class="card"><div class="field"><label>رقم الموبايل المسجل</label><input id="techPhone" placeholder="01xxxxxxxxx"></div><button class="btn primary" style="width:100%;padding:14px" onclick="techLogin()">دخول اللوحة</button></div>',
 orders:()=>`<h2>طلباتي</h2><div id="ordersList" class="card">جارٍ التحميل...</div>`,
   tech_join:()=>'<h2>🔧 انضم لفريق الفنيين</h2><div class="card"><div class="field"><label>الاسم الثلاثي *</label><input id="tjName"></div><div class="field"><label>رقم الموبايل *</label><input id="tjPhone"></div><div class="field"><label>المدينة *</label><input id="tjCity"></div><div class="field"><label>سنوات الخبرة</label><select id="tjExp"><option>أقل من سنة</option><option>1-3 سنوات</option><option>3-5 سنوات</option><option>5-10 سنوات</option><option>أكثر من 10 سنوات</option></select></div><button class="btn primary" style="width:100%;padding:14px" onclick="startQuiz()">التالي ➡️</button></div>',
