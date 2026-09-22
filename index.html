@@ -1028,6 +1028,7 @@ function setOrderStatus(i,status){
   safeWrite('ac_orders',orders);
   render();
 }
+  function setTechStatus(i,s){var apps=safeRead('ac_tech_apps',[]);if(!apps[i])return;apps[i].status=s;safeWrite('ac_tech_apps',apps);loadTechApps();}
   function getUsedCoupons(){if(!state.user)return[];return safeRead('ac_used_'+state.user.id,[])}
 function markCouponUsed(code){if(!state.user||!code)return;var u=getUsedCoupons();if(u.indexOf(code)===-1){u.push(code);safeWrite('ac_used_'+state.user.id,u)}}
   function promptCoupon(){
